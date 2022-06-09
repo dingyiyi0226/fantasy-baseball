@@ -18,7 +18,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "update": "node src/updateCredentials.js"
+    "update": "node src/updateCredentials.js",
+    "api": "node src/api_test.js"
   },
   "eslintConfig": {
     "extends": [
