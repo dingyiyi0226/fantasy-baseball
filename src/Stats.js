@@ -14,27 +14,28 @@ import apis from './apis.js'
 class Stats extends Component {
   constructor(props) {
     super(props)
+
     this.state = {
-      fetchMetadata: true,
       fetchStats: true,
       week: 1,
       type: 'value', // 'value', 'rank'
       stats: {},
       matchups: [],
       matchupColors: [],
-
-      league: {},
-      statCate: [],
-      teams: [],
     }
 
+    this.league = props.league;
+    this.teams = props.league.teams.team;
+    this.statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
+
     this.matchupColors = [
-      '#f9f8f1', '#F4FAE6', '#D9E5FA', '#F1D9FA', '#FAF2E1']
+      '#f9f8f1', '#F4FAE6', '#D9E5FA', '#F1D9FA', '#FAF2E1'
+    ]
   }
 
   getTeamStatsByWeek = async () => {
     let stats = {}
-    const allStats = await apis.getTeamStatsByWeek(this.state.teams.length, this.state.week)
+    const allStats = await apis.getTeamStatsByWeek(this.teams.length, this.state.week)
     allStats.forEach(team => {
       stats[team.team_id] = team.team_stats.stats.stat.filter(s => s.stat_id !== 60 && s.stat_id !== 50);
     })
@@ -59,29 +60,10 @@ class Stats extends Component {
     })
   }
 
-  getTeams = async () => {
-    const teams = await apis.getTeams()
-
-    this.setState({
-      teams: teams,
-    })
-  }
-
-  getLeague = async () => {
-    const league = await apis.getLeague();
-    const statCategories = league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat)
-
-    this.setState({
-      league: league,
-      statCate: statCategories,
-      week: league.current_week
-    })
-  }
-
   calulateRank = (allStats) => {
 
     let statsT = {}
-    this.state.statCate.forEach(s => {
+    this.statCate.forEach(s => {
       statsT[s.stat_id] = []
     })
 
@@ -92,7 +74,7 @@ class Stats extends Component {
     })
 
     for (let [stat_id, stat] of Object.entries(statsT)){
-      const sort_order = this.state.statCate.find(s => s.stat_id === Number(stat_id)).sort_order === 0;
+      const sort_order = this.statCate.find(s => s.stat_id === Number(stat_id)).sort_order === 0;
       stat.sort((a, b) => sort_order ? a-b : b-a)
     }
 
@@ -121,16 +103,6 @@ class Stats extends Component {
     })
   }
 
-
-  fetchMetadata = async () => {
-    await this.getLeague()
-    await this.getTeams()
-
-    this.setState({
-      fetchMetadata: false
-    })
-  }
-
   fetchStats = async () => {
     await this.getTeamStatsByWeek()
     await this.getMatchupsByWeek()
@@ -140,15 +112,10 @@ class Stats extends Component {
   }
 
   async componentDidMount() {
-    await this.fetchMetadata()
     await this.fetchStats()
   }
 
   render() {
-    if (this.state.fetchMetadata) {
-      return <h3 className="fetching-text">Fetching</h3>
-    }
-
     return (
       <Container>
         <Grid container spacing={2}>
@@ -160,7 +127,7 @@ class Stats extends Component {
               value={this.state.week}
               onChange={this.onSelectWeek}
             >
-              {[...Array(this.state.league.end_week-this.state.league.start_week+1).keys()].map(i => (
+              {[...Array(this.league.end_week-this.league.start_week+1).keys()].map(i => (
                 <MenuItem value={i+1} key={i+1}>{i+1}</MenuItem>
               ))}
 
@@ -191,7 +158,7 @@ class Stats extends Component {
               <TableHead>
                 <TableRow>
                   <TableCell> </TableCell>
-                  {this.state.teams.map((team) => (
+                  {this.teams.map((team) => (
                     <TableCell align="right" style={{backgroundColor: this.matchupColors[this.state.matchupColors[team.team_id]]}}>
                       {team.name}
                     </TableCell>
@@ -199,7 +166,7 @@ class Stats extends Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {this.state.statCate.map((stat) => (
+                {this.statCate.map((stat) => (
                   <TableRow
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
@@ -226,7 +193,7 @@ class Stats extends Component {
                   <TableCell align="right" component="th" scope="row">
                     Avg. Rank
                   </TableCell>
-                  {this.state.teams.map(team =>
+                  {this.teams.map(team =>
                     <TableCell align="right">
                       {(Object.values(this.state.stats[team.team_id])
                         .reduce((pv, v) => pv+v.rank, 0) / 14).toFixed(2)}
@@ -239,8 +206,8 @@ class Stats extends Component {
                   <TableCell align="right" component="th" scope="row">
                     Win/Loss
                   </TableCell>
-                  {this.state.teams.map(team => {
-                    if (this.state.week >= this.state.league.current_week) {
+                  {this.teams.map(team => {
+                    if (this.state.week >= this.league.current_week) {
                       return <TableCell align="right"> N/A </TableCell>
                     }
                     const tied_keys = []

@@ -46,24 +46,13 @@ const apis = {
     }
   },
 
-  async getTeams() {
+  async getMetadata() {
     try {
-      const query = `${baseURL}/league/${CONFIG.LEAGUE_KEY}/teams`;
-      const results = await makeAPIrequest(query);
-      return results.league.teams.team;
-    } catch (err) {
-      console.error(`Error in getTeams(): ${err}`);
-      return err;
-    }
-  },
-
-  async getLeague() {
-    try {
-      const query = `${baseURL}/league/${CONFIG.LEAGUE_KEY}/settings`;
+      const query = `${baseURL}/league/${CONFIG.LEAGUE_KEY};out=teams,settings`;
       const results = await makeAPIrequest(query);
       return results.league;
     } catch (err) {
-      console.error(`Error in getLeagueSettings(): ${err}`);
+      console.error(`Error in getMetadata(): ${err}`);
       return err;
     }
   },
