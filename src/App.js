@@ -5,6 +5,7 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 
 import Stats from './Stats.js'
+import TotalStats from './TotalStats.js'
 import Sidebar from './Sidebar.js'
 import Header from './Header.js'
 
@@ -33,7 +34,7 @@ class App extends Component {
     })
   }
 
-  fetchingElement = <h3 className="fetching-text">Fetchingaaa</h3>
+  fetchingElement = <h3 className="fetching-text">Fetching</h3>
 
   render() {
     const { fetching } = this.state;
@@ -45,12 +46,10 @@ class App extends Component {
           <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
             <Toolbar variant="dense"/>
             <Routes>
-              <Route path="/total" element="asfwef" />
               <Route path="/" element={fetching ? this.fetchingElement : <Stats league={this.state.league}/>} />
               <Route path="/weekly" element={fetching ? this.fetchingElement : <Stats league={this.state.league}/>} />
+              <Route path="/total" element={fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
             </Routes>
-
-
           </Box>
         </Box>
       </BrowserRouter>

@@ -67,6 +67,27 @@ const apis = {
       return err;
     }
   },
+
+  async getMatchupsUntilWeek(teamNum, week) {
+
+    let team_keys = `${CONFIG.LEAGUE_KEY}.t.1`;
+    for (let i=2;i<=teamNum;i++){
+      team_keys += `,${CONFIG.LEAGUE_KEY}.t.${i}`;
+    }
+    let week_keys = '1'
+    for (let i=2;i<=week;i++){
+      week_keys += `,${i}`;
+    }
+    const query = `${baseURL}/teams;team_keys=${team_keys}/matchups;weeks=${week_keys}`;
+
+    try {
+      const results = await makeAPIrequest(query);
+      return results.teams.team
+    } catch (err) {
+      console.error(`Error in getMatchupsUntilWeek(): ${err}`);
+      return err;
+    }
+  },
 }
 
 export default apis
