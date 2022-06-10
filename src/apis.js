@@ -31,11 +31,15 @@ const baseURL = 'https://fantasysports.yahooapis.com/fantasy/v2';
 
 const apis = {
 
-  async getTeamStatsByWeek(team, week) {
+  async getTeamStatsByWeek(teamNum, week) {
     try {
-      const query = `${baseURL}/team/${CONFIG.LEAGUE_KEY}.t.${team}/stats;type=week;week=${week}`;
+      let team_keys = `${CONFIG.LEAGUE_KEY}.t.1`;
+      for (let i=2;i<=teamNum;i++){
+        team_keys += `,${CONFIG.LEAGUE_KEY}.t.${i}`;
+      }
+      const query = `${baseURL}/teams;team_keys=${team_keys}/stats;type=week;week=${week}`;
       const results = await makeAPIrequest(query);
-      return results.team.team_stats.stats.stat;
+      return results.teams.team;
     } catch (err) {
       console.error(`Error in getTeamStatsByWeek(): ${err}`);
       return err;

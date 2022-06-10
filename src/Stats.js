@@ -20,7 +20,6 @@ class Stats extends Component {
       week: 1,
       type: 'value', // 'value', 'rank'
       stats: {},
-      ranks: {},
       matchups: [],
       matchupColors: [],
 
@@ -34,17 +33,15 @@ class Stats extends Component {
   }
 
   getTeamStatsByWeek = async () => {
-    const stats = {}
-    for (let team_id=1;team_id<11;team_id++){
-      let stat = await apis.getTeamStatsByWeek(team_id, this.state.week)
-      stat = stat.filter(s => s.stat_id !== 60 && s.stat_id !== 50);
-      stats[team_id] = stat;
-    }
-    const ranks = this.calulateRank(stats)
+    let stats = {}
+    const allStats = await apis.getTeamStatsByWeek(this.state.teams.length, this.state.week)
+    allStats.forEach(team => {
+      stats[team.team_id] = team.team_stats.stats.stat.filter(s => s.stat_id !== 60 && s.stat_id !== 50);
+    })
 
+    stats = this.calulateRank(stats)
     this.setState(state => ({
       stats: stats,
-      ranks: ranks
     }))
   }
 
@@ -88,8 +85,8 @@ class Stats extends Component {
       statsT[s.stat_id] = []
     })
 
-    Object.values(allStats).forEach(stat => {
-      stat.forEach(s => {
+    Object.values(allStats).forEach(stats => {
+      stats.forEach(s => {
         statsT[s.stat_id].push(s.value)
       })
     })
@@ -99,18 +96,12 @@ class Stats extends Component {
       stat.sort((a, b) => sort_order ? a-b : b-a)
     }
 
-    const ranks = {}
-    this.state.teams.forEach(team => {
-      ranks[team.team_id] = []
-    })
-
-    for (let [team_id, stats] of Object.entries(allStats)){
+    Object.values(allStats).forEach(stats => {
       stats.forEach(stat => {
-        const rank = statsT[stat.stat_id].indexOf(stat.value) + 1;
-        ranks[team_id].push({stat_id: stat.stat_id, value: rank})
+        stat.rank = statsT[stat.stat_id].indexOf(stat.value) + 1;
       })
-    }
-    return ranks
+    })
+    return allStats
   }
 
   onSelectWeek = (e) => {
@@ -221,9 +212,9 @@ class Stats extends Component {
                         {this.state.stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).value}
                       </TableCell>
                       )) :
-                      Object.keys(this.state.ranks).map((teamID) => (
+                      Object.keys(this.state.stats).map((teamID) => (
                       <TableCell align="right">
-                        {this.state.ranks[teamID].find(s => s.stat_id === Number(stat.stat_id)).value}
+                        {this.state.stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).rank}
                       </TableCell>
                       ))
                     }
@@ -237,8 +228,8 @@ class Stats extends Component {
                   </TableCell>
                   {this.state.teams.map(team =>
                     <TableCell align="right">
-                      {(Object.values(this.state.ranks[team.team_id])
-                        .reduce((pv, v) => pv+v.value, 0) / 14).toFixed(2)}
+                      {(Object.values(this.state.stats[team.team_id])
+                        .reduce((pv, v) => pv+v.rank, 0) / 14).toFixed(2)}
                     </TableCell>
                   )}
                 </TableRow>
