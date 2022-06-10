@@ -62,7 +62,18 @@ const apis = {
       console.error(`Error in getLeagueSettings(): ${err}`);
       return err;
     }
-  }
+  },
+
+  async getMatchupsByWeek(week) {
+    try {
+      const query = `${baseURL}/league/${CONFIG.LEAGUE_KEY}/scoreboard;week=${week}`
+      const results = await makeAPIrequest(query);
+      return results.league.scoreboard.matchups.matchup
+    } catch (err) {
+      console.error(`Error in getMatchupsByWeek(): ${err}`);
+      return err;
+    }
+  },
 }
 
 export default apis

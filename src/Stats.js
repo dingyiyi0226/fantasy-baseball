@@ -21,12 +21,15 @@ class Stats extends Component {
       type: 'value', // 'value', 'rank'
       stats: {},
       ranks: {},
+      matchups: [],
 
       league: {},
+      statCate: [],
       teams: [],
-      teamID2Name: {},
-      statID2Name: {},
     }
+
+    this.matchupColors = [
+      '#f9f8f1', '#F4FAE6', '#D9E5FA', '#F1D9FA', '#FAF2E1']
   }
 
   getTeamStatsByWeek = async () => {
@@ -40,38 +43,42 @@ class Stats extends Component {
     }
   }
 
-  getTeams = async () => {
-    const teams = await apis.getTeams()
-    const teamID2Name = {}
-    teams.forEach(team => {
-      teamID2Name[team.team_id] = team.name;
+  getMatchupsByWeek = async () => {
+    let matchups = await apis.getMatchupsByWeek(this.state.week)
+    let teamMatchups = {}
+    matchups.forEach((matchup, i) => {
+      matchup.teams.team.forEach(team => {
+        teamMatchups[team.team_id] = i
+      })
     })
     this.setState({
+      matchups: teamMatchups
+    })
+  }
+
+  getTeams = async () => {
+    const teams = await apis.getTeams()
+
+    this.setState({
       teams: teams,
-      teamID2Name: teamID2Name
     })
   }
 
   getLeague = async () => {
     const league = await apis.getLeague();
     const statCategories = league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat)
-    const statID2Name = {}
-    statCategories.forEach(stat => {
-      statID2Name[stat.stat_id] = stat.display_name;
-    })
 
     this.setState({
       league: league,
-      statID2Name: statID2Name,
+      statCate: statCategories,
       week: league.current_week
     })
   }
 
   calulateRank = () => {
-    const statCategories = this.state.league.settings.stat_categories.stats.stat
-                               .filter(s => !s.is_only_display_stat)
+
     let statsT = {}
-    statCategories.forEach(s => {
+    this.state.statCate.forEach(s => {
       statsT[s.stat_id] = []
     })
 
@@ -82,7 +89,7 @@ class Stats extends Component {
     })
 
     for (let [stat_id, stat] of Object.entries(statsT)){
-      const sort_order = statCategories.find(s => s.stat_id === Number(stat_id)).sort_order === 0;
+      const sort_order = this.state.statCate.find(s => s.stat_id === Number(stat_id)).sort_order === 0;
       stat.sort((a, b) => sort_order ? a-b : b-a)
     }
 
@@ -139,6 +146,7 @@ class Stats extends Component {
 
   fetchStats = async () => {
     await this.getTeamStatsByWeek()
+    await this.getMatchupsByWeek()
     this.setState({
       fetchStats: false
     })
@@ -197,27 +205,29 @@ class Stats extends Component {
                 <TableRow>
                   <TableCell> </TableCell>
                   {this.state.teams.map((team) => (
-                    <TableCell align="right">{team.name}</TableCell>
+                    <TableCell align="right" style={{backgroundColor: this.matchupColors[this.state.matchups[team.team_id]]}}>
+                      {team.name}
+                    </TableCell>
                   ))}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {Object.keys(this.state.statID2Name).map((statID) => (
+                {this.state.statCate.map((stat) => (
                   <TableRow
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
                     <TableCell align="right" component="th" scope="row">
-                      {this.state.statID2Name[statID]}
+                      {stat.display_name}
                     </TableCell>
                     {this.state.type === 'value' ?
                       Object.keys(this.state.stats).map((teamID) => (
                       <TableCell align="right">
-                        {this.state.stats[teamID].find(s => s.stat_id === Number(statID)).value}
+                        {this.state.stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).value}
                       </TableCell>
                       )) :
                       Object.keys(this.state.ranks).map((teamID) => (
                       <TableCell align="right">
-                        {this.state.ranks[teamID].find(s => s.stat_id === Number(statID)).value}
+                        {this.state.ranks[teamID].find(s => s.stat_id === Number(stat.stat_id)).value}
                       </TableCell>
                       ))
                     }
