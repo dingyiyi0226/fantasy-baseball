@@ -1,9 +1,7 @@
 import axios from 'axios'
 import { XMLParser } from 'fast-xml-parser'
 
-import CONFIG from './config.json'
 import CREDENTIALS from './credentials.json'
-
 
 async function makeAPIrequest(url) {
   let response;
@@ -27,15 +25,28 @@ async function makeAPIrequest(url) {
   }
 }
 
+async function getLeagueKey() {
+  try {
+    // const query = `${baseURL}/game/mlb`;  // get game_key=412
+    const query = `${baseURL}/users;use_login=1/games;game_keys=412/leagues`;
+    const results = await makeAPIrequest(query);
+    return results.users.user.games.game.leagues.league.league_key;
+  } catch (err) {
+    console.error(`Error in getLeagueKey(): ${err}`);
+    return err;
+  }
+}
+
 const baseURL = 'https://fantasysports.yahooapis.com/fantasy/v2';
+let LEAGUE_KEY = '';
 
 const apis = {
 
   async getTeamStatsByWeek(teamNum, week) {
     try {
-      let team_keys = `${CONFIG.LEAGUE_KEY}.t.1`;
+      let team_keys = `${LEAGUE_KEY}.t.1`;
       for (let i=2;i<=teamNum;i++){
-        team_keys += `,${CONFIG.LEAGUE_KEY}.t.${i}`;
+        team_keys += `,${LEAGUE_KEY}.t.${i}`;
       }
       const query = `${baseURL}/teams;team_keys=${team_keys}/stats;type=week;week=${week}`;
       const results = await makeAPIrequest(query);
@@ -48,7 +59,8 @@ const apis = {
 
   async getMetadata() {
     try {
-      const query = `${baseURL}/league/${CONFIG.LEAGUE_KEY};out=teams,settings`;
+      LEAGUE_KEY = await getLeagueKey();
+      const query = `${baseURL}/league/${LEAGUE_KEY};out=teams,settings`;
       const results = await makeAPIrequest(query);
       return results.league;
     } catch (err) {
@@ -59,7 +71,7 @@ const apis = {
 
   async getMatchupsByWeek(week) {
     try {
-      const query = `${baseURL}/league/${CONFIG.LEAGUE_KEY}/scoreboard;week=${week}`
+      const query = `${baseURL}/league/${LEAGUE_KEY}/scoreboard;week=${week}`
       const results = await makeAPIrequest(query);
       return results.league.scoreboard.matchups.matchup
     } catch (err) {
@@ -70,9 +82,9 @@ const apis = {
 
   async getMatchupsUntilWeek(teamNum, week) {
 
-    let team_keys = `${CONFIG.LEAGUE_KEY}.t.1`;
+    let team_keys = `${LEAGUE_KEY}.t.1`;
     for (let i=2;i<=teamNum;i++){
-      team_keys += `,${CONFIG.LEAGUE_KEY}.t.${i}`;
+      team_keys += `,${LEAGUE_KEY}.t.${i}`;
     }
     let week_keys = '1'
     for (let i=2;i<=week;i++){
