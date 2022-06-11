@@ -127,7 +127,7 @@ class Stats extends Component {
               value={this.state.week}
               onChange={this.onSelectWeek}
             >
-              {[...Array(this.league.end_week-this.league.start_week+1).keys()].map(i => (
+              {[...Array(this.league.current_week-this.league.start_week+1).keys()].map(i => (
                 <MenuItem value={i+1} key={i+1}>{i+1}</MenuItem>
               ))}
 
