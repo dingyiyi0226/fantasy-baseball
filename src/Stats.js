@@ -17,7 +17,7 @@ class Stats extends Component {
 
     this.state = {
       fetchStats: true,
-      week: 1,
+      week: props.league.current_week,
       type: 'value', // 'value', 'rank'
       stats: {},
       matchups: [],
