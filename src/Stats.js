@@ -159,7 +159,7 @@ class Stats extends Component {
                 <TableRow>
                   <TableCell> </TableCell>
                   {this.teams.map((team) => (
-                    <TableCell align="right" style={{backgroundColor: this.matchupColors[this.state.matchupColors[team.team_id]]}}>
+                    <TableCell width="9%" align="right" style={{backgroundColor: this.matchupColors[this.state.matchupColors[team.team_id]]}}>
                       {team.name}
                     </TableCell>
                   ))}

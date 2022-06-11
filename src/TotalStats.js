@@ -157,9 +157,9 @@ class TotalStats extends Component {
             <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
               <TableHead>
                 <TableRow>
-                  <TableCell> </TableCell>
+                  <TableCell width="4%"> </TableCell>
                   {this.teams.map((team) =>
-                    <TableCell align="right">{team.name}</TableCell>
+                    <TableCell align="right" width="9%">{team.name}</TableCell>
                   )}
                 </TableRow>
               </TableHead>
