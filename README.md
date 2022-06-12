@@ -10,8 +10,8 @@
    ```json
    {
       "CONSUMER_KEY": "your key",
-   	"CONSUMER_SECRET": "your secret",
-   	"YAHOO_AUTH_CODE": "code"
+      "CONSUMER_SECRET": "your secret",
+      "YAHOO_AUTH_CODE": "code"
    }
    ```
 
