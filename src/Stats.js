@@ -33,9 +33,9 @@ class Stats extends Component {
     ]
   }
 
-  getTeamsStatsByWeek = async () => {
+  getTeamsStatsByWeek = async (week=null) => {
     let stats = {}
-    const allStats = await apis.getTeamsStatsByWeek(this.teams.length, this.state.week)
+    const allStats = await apis.getTeamsStatsByWeek(this.teams.length, week || this.state.week)
     allStats.forEach(team => {
       stats[team.team_id] = team.team_stats.stats.stat.filter(s => s.stat_id !== 60 && s.stat_id !== 50);
     })
@@ -46,8 +46,8 @@ class Stats extends Component {
     }))
   }
 
-  getMatchupsByWeek = async () => {
-    let matchups = await apis.getMatchupsByWeek(this.state.week)
+  getMatchupsByWeek = async (week=null) => {
+    let matchups = await apis.getMatchupsByWeek(week || this.state.week)
     let matchupsColor = {}
     matchups.forEach((matchup, i) => {
       matchup.teams.team.forEach(team => {
@@ -94,7 +94,7 @@ class Stats extends Component {
       week: e.target.value,
       fetchStats: true,
     })
-    this.fetchStats()
+    this.fetchStats(e.target.value);
   }
 
   onSelectType = (e) => {
@@ -103,9 +103,9 @@ class Stats extends Component {
     })
   }
 
-  fetchStats = async () => {
-    await this.getTeamsStatsByWeek()
-    await this.getMatchupsByWeek()
+  fetchStats = async (week) => {
+    await this.getTeamsStatsByWeek(week)
+    await this.getMatchupsByWeek(week)
     this.setState({
       fetchStats: false
     })
