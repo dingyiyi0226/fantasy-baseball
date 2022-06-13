@@ -1,26 +1,48 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-import { apis, getToken } from './apis.js';
+import Avatar from '@mui/material/Avatar'
+import Container from '@mui/material/Container';
+import { List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 
-function Home() {
+import { getToken } from './apis.js';
+
+function Home(props) {
   let [searchParams, setSearchParams] = useSearchParams();
+  let [league, setLeague] = useState({});
+  const auth_code = searchParams.get('code');
+
+  const getMetadataWrapper = useCallback(() => props.getMetadata(), []);
 
   useEffect(() => {
-    const auth_code = searchParams.get('code');
-
     const fetchMetadata = async () => {
       await getToken(auth_code);
-      const league = await apis.getMetadata();
-      console.log('league', league);
+      const league_meta = await getMetadataWrapper();
+      setLeague(league_meta);
     }
 
-    fetchMetadata();
+    if (auth_code){
+      fetchMetadata();
+    }
 
-  }, [searchParams]);
+  }, [auth_code, getMetadataWrapper]);
 
   return (
-    <div>asdf</div>
+    <Container>
+      {Object.keys(league).length === 0 ?
+        <h3 className="fetching-text">Fetching</h3> :
+        <List>
+          {league.teams.team.map(team => (
+            <ListItem>
+              <ListItemAvatar>
+                <Avatar alt={team.name} src={team.team_logos.team_logo.url} />
+              </ListItemAvatar>
+              <ListItemText primary={team.name} />
+            </ListItem>
+          ))}
+        </List>
+      }
+    </Container>
   )
 
 }

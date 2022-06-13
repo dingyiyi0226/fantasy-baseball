@@ -24,16 +24,13 @@ class App extends Component {
     }
   }
 
-  componentDidMount() {
-    // this.getMetadata()
-  }
-
   getMetadata = async () => {
     const league = await apis.getMetadata();
     this.setState({
       fetching: false,
       league: league,
     })
+    return league;
   }
 
   fetchingElement = <h3 className="fetching-text">Fetching</h3>
@@ -45,7 +42,7 @@ class App extends Component {
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <Toolbar variant="dense"/>
           <Routes>
-            <Route path="/home" element=<Home/> />
+            <Route path="/home" element=<Home getMetadata={this.getMetadata}/> />
             <Route path="/weekly" element={this.state.fetching ? this.fetchingElement : <Stats league={this.state.league}/>} />
             <Route path="/total" element={this.state.fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
           </Routes>
