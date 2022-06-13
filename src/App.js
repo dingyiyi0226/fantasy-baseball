@@ -8,8 +8,10 @@ import Stats from './Stats.js'
 import TotalStats from './TotalStats.js'
 import Sidebar from './Sidebar.js'
 import Header from './Header.js'
+import Home from './Home.js'
+import Login from './Login.js'
 
-import apis from './apis.js'
+import { apis } from './apis.js'
 import './App.css';
 
 
@@ -23,7 +25,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.getMetadata()
+    // this.getMetadata()
   }
 
   getMetadata = async () => {
@@ -36,21 +38,32 @@ class App extends Component {
 
   fetchingElement = <h3 className="fetching-text">Fetching</h3>
 
+  main = () => {
+    return (
+      <React.Fragment>
+        <Sidebar />
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          <Toolbar variant="dense"/>
+          <Routes>
+            <Route path="/home" element=<Home/> />
+            <Route path="/weekly" element={this.state.fetching ? this.fetchingElement : <Stats league={this.state.league}/>} />
+            <Route path="/total" element={this.state.fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
+          </Routes>
+        </Box>
+      </React.Fragment>
+    )
+  }
+
   render() {
-    const { fetching } = this.state;
     return (
       <BrowserRouter>
         <Box sx={{ display: 'flex' }}>
           <Header />
-          <Sidebar />
-          <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-            <Toolbar variant="dense"/>
-            <Routes>
-              <Route path="/" element={fetching ? this.fetchingElement : <Stats league={this.state.league}/>} />
-              <Route path="/weekly" element={fetching ? this.fetchingElement : <Stats league={this.state.league}/>} />
-              <Route path="/total" element={fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
-            </Routes>
-          </Box>
+          <Routes>
+            <Route path="/" element=<Login/>/>
+            <Route path="*" element={this.main()}/>
+          </Routes>
+
         </Box>
       </BrowserRouter>
     )

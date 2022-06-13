@@ -1,7 +1,13 @@
 import axios from 'axios'
 import { XMLParser } from 'fast-xml-parser'
 
-import CREDENTIALS from './credentials.json'
+// import CREDENTIALS from './credentials.json'
+
+const BACKEND_URL = 'http://localhost:4000'
+const baseURL = 'https://fantasysports.yahooapis.com/fantasy/v2';
+let LEAGUE_KEY = '';
+let ACCESS_TOKEN = '';
+let REFRESH_TOKEN = '';
 
 async function makeAPIrequest(url) {
   let response;
@@ -10,7 +16,7 @@ async function makeAPIrequest(url) {
       url,
       method: "get",
       headers: {
-        Authorization: `Bearer ${CREDENTIALS.access_token}`,
+        Authorization: `Bearer ${ACCESS_TOKEN}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
     });
@@ -20,10 +26,70 @@ async function makeAPIrequest(url) {
 
     return jsonData;
   } catch (err) {
-    console.error(`Error with credentials in makeAPIrequest(): ${err}`);
+    if (err.response.data && err.response.data.error
+        && err.response.data.error.description
+        && err.response.data.error.description.includes("token_expired")){
+      await refreshToken();
+      return makeAPIrequest(url);
+    } else {
+      console.error(`Error with credentials in makeAPIrequest(): ${err.response.data}`);
+    }
     return err;
   }
 }
+
+async function getToken(authCode) {
+  console.log('getToken', authCode);
+
+  if (ACCESS_TOKEN) {
+    return
+  }
+
+  try {
+    let response = await axios.get(`${BACKEND_URL}/token`, {
+      params: {
+        code: authCode
+      },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+    ACCESS_TOKEN = response.data.access_token;
+    REFRESH_TOKEN = response.data.refresh_token;
+
+    console.log('access', ACCESS_TOKEN);
+    console.log('refresh', REFRESH_TOKEN);
+
+  } catch (error) {
+    console.error(`Error in getToken(): ${error.response.data}`);
+    console.error(error.config);
+  }
+}
+
+async function refreshToken() {
+  console.log('refreshToken');
+
+  try {
+    let response = await axios.get(`${BACKEND_URL}/refresh`, {
+      params: {
+        refresh_token: REFRESH_TOKEN
+      },
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+    });
+    ACCESS_TOKEN = response.data.access_token;
+    REFRESH_TOKEN = response.data.refresh_token;
+
+    console.log('access', ACCESS_TOKEN);
+    console.log('refresh', REFRESH_TOKEN);
+
+  } catch (error) {
+    console.error(`Error in refresh_token(): ${error.response.data}`);
+    console.error(error.config);
+  }
+}
+
 
 async function getLeagueKey() {
   try {
@@ -32,17 +98,26 @@ async function getLeagueKey() {
     const results = await makeAPIrequest(query);
     return results.users.user.games.game.leagues.league.league_key;
   } catch (err) {
-    console.error(`Error in getLeagueKey(): ${err}`);
+    console.error(`Error in getLeagueKey(): ${err.response.data}`);
     return err;
   }
 }
 
-const baseURL = 'https://fantasysports.yahooapis.com/fantasy/v2';
-let LEAGUE_KEY = '';
 
 const apis = {
+  async getMetadata() {
+    try {
+      LEAGUE_KEY = await getLeagueKey();
+      const query = `${baseURL}/league/${LEAGUE_KEY};out=teams,settings`;
+      const results = await makeAPIrequest(query);
+      return results.league;
+    } catch (err) {
+      console.error(`Error in getMetadata(): ${err}`);
+      return err;
+    }
+  },
 
-  async getTeamStatsByWeek(teamNum, week) {
+  async getTeamsStatsByWeek(teamNum, week) {
     try {
       let team_keys = `${LEAGUE_KEY}.t.1`;
       for (let i=2;i<=teamNum;i++){
@@ -52,19 +127,24 @@ const apis = {
       const results = await makeAPIrequest(query);
       return results.teams.team;
     } catch (err) {
-      console.error(`Error in getTeamStatsByWeek(): ${err}`);
+      console.error(`Error in getTeamsStatsByWeek(): ${err}`);
       return err;
     }
   },
 
-  async getMetadata() {
+  async getTeamStatsUntilWeek(team, week) {
+    let week_keys = '1'
+    for (let i=2;i<=week;i++){
+      week_keys += `,${i}`;
+    }
+
+    const query = `${baseURL}/team/${LEAGUE_KEY}.t.${team}/matchups;weeks=${week_keys}`;
+
     try {
-      LEAGUE_KEY = await getLeagueKey();
-      const query = `${baseURL}/league/${LEAGUE_KEY};out=teams,settings`;
       const results = await makeAPIrequest(query);
-      return results.league;
+      return results.teams.team
     } catch (err) {
-      console.error(`Error in getMetadata(): ${err}`);
+      console.error(`Error in getMatchupsUntilWeek(): ${err}`);
       return err;
     }
   },
@@ -102,4 +182,4 @@ const apis = {
   },
 }
 
-export default apis
+export { apis, getToken };

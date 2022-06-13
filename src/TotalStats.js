@@ -8,7 +8,7 @@ import Select from '@mui/material/Select';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 
-import apis from './apis.js'
+import { apis } from './apis.js'
 
 
 class TotalStats extends Component {

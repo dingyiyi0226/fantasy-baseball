@@ -8,7 +8,7 @@ import Select from '@mui/material/Select';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 
-import apis from './apis.js'
+import { apis } from './apis.js'
 
 
 class Stats extends Component {
@@ -33,9 +33,9 @@ class Stats extends Component {
     ]
   }
 
-  getTeamStatsByWeek = async () => {
+  getTeamsStatsByWeek = async () => {
     let stats = {}
-    const allStats = await apis.getTeamStatsByWeek(this.teams.length, this.state.week)
+    const allStats = await apis.getTeamsStatsByWeek(this.teams.length, this.state.week)
     allStats.forEach(team => {
       stats[team.team_id] = team.team_stats.stats.stat.filter(s => s.stat_id !== 60 && s.stat_id !== 50);
     })
@@ -104,7 +104,7 @@ class Stats extends Component {
   }
 
   fetchStats = async () => {
-    await this.getTeamStatsByWeek()
+    await this.getTeamsStatsByWeek()
     await this.getMatchupsByWeek()
     this.setState({
       fetchStats: false
