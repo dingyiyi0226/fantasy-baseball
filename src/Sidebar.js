@@ -34,6 +34,7 @@ class Sidebar extends Component {
   constructor(props) {
     super(props)
     this.links = {
+      home: 'Home',
       weekly: 'Weekly Result',
       total: 'Total Result',
     }

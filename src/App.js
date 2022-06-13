@@ -42,7 +42,7 @@ class App extends Component {
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <Toolbar variant="dense"/>
           <Routes>
-            <Route path="/home" element=<Home getMetadata={this.getMetadata}/> />
+            <Route path="/home" element=<Home getMetadata={this.getMetadata} league={this.state.league}/> />
             <Route path="/weekly" element={this.state.fetching ? this.fetchingElement : <Stats league={this.state.league}/>} />
             <Route path="/total" element={this.state.fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
           </Routes>

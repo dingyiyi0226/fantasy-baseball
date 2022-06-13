@@ -29,10 +29,10 @@ function Home(props) {
 
   return (
     <Container>
-      {Object.keys(league).length === 0 ?
+      {Object.keys(league).length === 0 && Object.keys(props.league).length === 0 ?
         <h3 className="fetching-text">Fetching</h3> :
         <List>
-          {league.teams.team.map(team => (
+          {(league.teams || props.league.teams).team.map(team => (
             <ListItem>
               <ListItemAvatar>
                 <Avatar alt={team.name} src={team.team_logos.team_logo.url} />
