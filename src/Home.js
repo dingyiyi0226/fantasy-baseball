@@ -40,7 +40,6 @@ function Home(props) {
       }
     </Container>
   )
-
 }
 
 export default Home;

@@ -2,7 +2,7 @@ import axios from 'axios'
 import { XMLParser } from 'fast-xml-parser'
 
 
-const BACKEND_URL = 'http://localhost:4000'
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const baseURL = 'https://fantasysports.yahooapis.com/fantasy/v2';
 let LEAGUE_KEY = '';
 let ACCESS_TOKEN = '';
@@ -46,9 +46,10 @@ async function makeAPIrequest(url) {
 }
 
 async function getToken(authCode) {
-  console.log('getToken', authCode);
+  // console.log('getToken', authCode);
 
   if (ACCESS_TOKEN || localStorage.getItem('access_token')) {
+    console.log('auth code existed');
     return
   }
 
@@ -67,8 +68,8 @@ async function getToken(authCode) {
     localStorage.setItem('access_token', ACCESS_TOKEN);
     localStorage.setItem('refresh_token', REFRESH_TOKEN);
 
-    console.log('access', ACCESS_TOKEN);
-    console.log('refresh', REFRESH_TOKEN);
+    // console.log('access', ACCESS_TOKEN);
+    // console.log('refresh', REFRESH_TOKEN);
 
   } catch (error) {
     console.error(`Error in getToken(): ${error.response.data}`);
@@ -98,8 +99,8 @@ async function refreshToken() {
     ACCESS_TOKEN = response.data.access_token;
     REFRESH_TOKEN = response.data.refresh_token;
 
-    console.log('access', ACCESS_TOKEN);
-    console.log('refresh', REFRESH_TOKEN);
+    // console.log('access', ACCESS_TOKEN);
+    // console.log('refresh', REFRESH_TOKEN);
 
   } catch (error) {
     console.error(`Error in refresh_token(): ${error.response.data}`);

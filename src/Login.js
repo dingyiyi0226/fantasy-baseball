@@ -3,11 +3,7 @@ import React, { Component } from 'react'
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
 
-
-const CLIENT_ID = 'dj0yJmk9N0U1Z01uTTRFZkpNJmQ9WVdrOVozY3dTakZQUVdnbWNHbzlNQT09JnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PTI3';
-// const REDIRECT_URI = 'https://dingyiyi0226.github.io/fantasy-baseball';
-const REDIRECT_URI = 'https://localhost:3000/home';
-const oauth_link = `https://api.login.yahoo.com/oauth2/request_auth?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code`;
+const oauth_link = `https://api.login.yahoo.com/oauth2/request_auth?client_id=${process.env.REACT_APP_CLIENT_ID}&redirect_uri=${process.env.REACT_APP_REDIRECT_URI}&response_type=code`;
 
 
 class Login extends Component {
@@ -22,7 +18,7 @@ class Login extends Component {
       <Container>
         <Toolbar/>
         <a href={oauth_link}>
-          <img src={process.env.PUBLIC_URL+'yahoo_login.png'} alt="yahoo-login" width="300"/>
+          <img src={process.env.PUBLIC_URL+'/yahoo_login.png'} alt="yahoo-login" width="300"/>
         </a>
 
         
