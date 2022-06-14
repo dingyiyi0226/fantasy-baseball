@@ -18,8 +18,10 @@ class App extends Component {
         <Box sx={{ display: 'flex' }}>
           <Header />
           <Routes>
-            <Route path="/" element=<Login/>/>
-            <Route path="/*" element=<Main/>/>
+            <Route path="/">
+              <Route index element=<Login/>/>
+              <Route path="*" element=<Main/>/>
+            </Route>
           </Routes>
 
         </Box>
