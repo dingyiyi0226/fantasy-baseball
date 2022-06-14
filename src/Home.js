@@ -5,27 +5,23 @@ import Avatar from '@mui/material/Avatar'
 import Container from '@mui/material/Container';
 import { List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 
-import { getToken } from './apis.js';
 
 function Home(props) {
   let [searchParams, setSearchParams] = useSearchParams();
   let [league, setLeague] = useState({});
-  const auth_code = searchParams.get('code');
+  const authCode = searchParams.get('code');
 
-  const getMetadataWrapper = useCallback(() => props.getMetadata(), []);
+  const getMetadataWrapper = useCallback((authCode) => props.getMetadata(authCode), []);
 
   useEffect(() => {
-    const fetchMetadata = async () => {
-      await getToken(auth_code);
-      const league_meta = await getMetadataWrapper();
+    const fetchMetadata = async (authCode) => {
+      const league_meta = await getMetadataWrapper(authCode);
       setLeague(league_meta);
     }
 
-    if (auth_code){
-      fetchMetadata();
-    }
+    fetchMetadata(authCode)
 
-  }, [auth_code, getMetadataWrapper]);
+  }, [authCode, getMetadataWrapper]);
 
   return (
     <Container>

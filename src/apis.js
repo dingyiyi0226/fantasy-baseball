@@ -1,7 +1,6 @@
 import axios from 'axios'
 import { XMLParser } from 'fast-xml-parser'
 
-// import CREDENTIALS from './credentials.json'
 
 const BACKEND_URL = 'http://localhost:4000'
 const baseURL = 'https://fantasysports.yahooapis.com/fantasy/v2';
@@ -10,6 +9,14 @@ let ACCESS_TOKEN = '';
 let REFRESH_TOKEN = '';
 
 async function makeAPIrequest(url) {
+  if (!ACCESS_TOKEN && !localStorage.getItem('access_token')) {
+    console.error('access_token not exists');
+  } else if (!ACCESS_TOKEN) {
+    ACCESS_TOKEN = localStorage.getItem('access_token');
+    REFRESH_TOKEN = localStorage.getItem('refresh_token');
+    console.log('get token from local storage');
+  }
+
   let response;
   try {
     response = await axios({
@@ -41,7 +48,7 @@ async function makeAPIrequest(url) {
 async function getToken(authCode) {
   console.log('getToken', authCode);
 
-  if (ACCESS_TOKEN) {
+  if (ACCESS_TOKEN || localStorage.getItem('access_token')) {
     return
   }
 
@@ -57,6 +64,9 @@ async function getToken(authCode) {
     ACCESS_TOKEN = response.data.access_token;
     REFRESH_TOKEN = response.data.refresh_token;
 
+    localStorage.setItem('access_token', ACCESS_TOKEN);
+    localStorage.setItem('refresh_token', REFRESH_TOKEN);
+
     console.log('access', ACCESS_TOKEN);
     console.log('refresh', REFRESH_TOKEN);
 
@@ -68,6 +78,13 @@ async function getToken(authCode) {
 
 async function refreshToken() {
   console.log('refreshToken');
+
+  if (!REFRESH_TOKEN && !localStorage.getItem('refresh_token')) {
+    console.error('refresh_token not exist');
+    return
+  } else if (!REFRESH_TOKEN) {
+    REFRESH_TOKEN = localStorage.getItem('refresh_token');
+  }
 
   try {
     let response = await axios.get(`${BACKEND_URL}/refresh`, {

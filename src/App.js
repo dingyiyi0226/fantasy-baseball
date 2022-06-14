@@ -11,7 +11,7 @@ import Header from './Header.js'
 import Home from './Home.js'
 import Login from './Login.js'
 
-import { apis } from './apis.js'
+import { apis, getToken } from './apis.js'
 import './App.css';
 
 
@@ -24,7 +24,14 @@ class App extends Component {
     }
   }
 
-  getMetadata = async () => {
+  componentDidMount() {
+    this.getMetadata();
+  }
+
+  getMetadata = async (authCode) => {
+    if (!authCode){
+      await getToken(authCode);
+    }
     const league = await apis.getMetadata();
     this.setState({
       fetching: false,
