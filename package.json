@@ -1,6 +1,7 @@
 {
   "name": "fantasy-baseball",
   "version": "0.1.0",
+  "homepage": "https://dingyiyi0226.github.io/fantasy-baseball",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.9.0",
