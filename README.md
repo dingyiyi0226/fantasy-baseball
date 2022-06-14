@@ -2,4 +2,4 @@
 
 a simple fantasy baseball stats visualizer
 
-Website: dingyiyi0226.github.io/fantasy-baseball
+Website: [dingyiyi0226.github.io/fantasy-baseball](dingyiyi0226.github.io/fantasy-baseball)
