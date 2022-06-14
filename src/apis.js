@@ -3,7 +3,8 @@ import { XMLParser } from 'fast-xml-parser'
 
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const baseURL = 'https://fantasysports.yahooapis.com/fantasy/v2';
+// const baseURL = 'https://fantasysports.yahooapis.com/fantasy/v2';
+const baseURL = `${process.env.REACT_APP_BACKEND_URL}/api`
 let LEAGUE_KEY = '';
 let ACCESS_TOKEN = '';
 let REFRESH_TOKEN = '';
