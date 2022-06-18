@@ -1,3 +1,5 @@
+# Ref: [comments from lukesmurray](https://github.com/tschaub/gh-pages/issues/345#issuecomment-776965452)
+
 name: gh-pages
 
 on:
@@ -28,6 +30,13 @@ jobs:
 
       - name: Load dependancies
         run: yarn
+
+      - name: Create env file
+        run: |
+          touch .env
+          echo REACT_APP_BACKEND_URL=${{ secrets.REACT_APP_BACKEND_URL }} >> .env
+          echo REACT_APP_REDIRECT_URI=${{ secrets.REACT_APP_REDIRECT_URI }} >> .env
+          echo REACT_APP_CLIENT_ID=${{ secrets.REACT_APP_CLIENT_ID }} >> .env
 
       - name: Deploy with gh-pages
         run: |
