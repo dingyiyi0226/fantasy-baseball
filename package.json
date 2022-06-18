@@ -27,7 +27,7 @@
     "token": "node src/get_credentials.js",
     "api": "node src/api_test.js",
     "predeploy": "yarn build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -b master -d build"
   },
   "eslintConfig": {
     "extends": [
