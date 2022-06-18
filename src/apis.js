@@ -3,18 +3,17 @@ import { XMLParser } from 'fast-xml-parser'
 
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-// const baseURL = 'https://fantasysports.yahooapis.com/fantasy/v2';
 const baseURL = `${process.env.REACT_APP_BACKEND_URL}/api`
 let LEAGUE_KEY = '';
 let ACCESS_TOKEN = '';
 let REFRESH_TOKEN = '';
 
 async function makeAPIrequest(url) {
-  if (!ACCESS_TOKEN && !localStorage.getItem('access_token')) {
+  if (!ACCESS_TOKEN && !sessionStorage.getItem('access_token')) {
     console.error('access_token not exists');
   } else if (!ACCESS_TOKEN) {
-    ACCESS_TOKEN = localStorage.getItem('access_token');
-    REFRESH_TOKEN = localStorage.getItem('refresh_token');
+    ACCESS_TOKEN = sessionStorage.getItem('access_token');
+    REFRESH_TOKEN = sessionStorage.getItem('refresh_token');
     console.log('get token from local storage');
   }
 
@@ -49,7 +48,7 @@ async function makeAPIrequest(url) {
 async function getToken(authCode) {
   // console.log('getToken', authCode);
 
-  if (ACCESS_TOKEN || localStorage.getItem('access_token')) {
+  if (ACCESS_TOKEN || sessionStorage.getItem('access_token')) {
     console.log('auth code existed');
     return
   }
@@ -66,8 +65,8 @@ async function getToken(authCode) {
     ACCESS_TOKEN = response.data.access_token;
     REFRESH_TOKEN = response.data.refresh_token;
 
-    localStorage.setItem('access_token', ACCESS_TOKEN);
-    localStorage.setItem('refresh_token', REFRESH_TOKEN);
+    sessionStorage.setItem('access_token', ACCESS_TOKEN);
+    sessionStorage.setItem('refresh_token', REFRESH_TOKEN);
 
     // console.log('access', ACCESS_TOKEN);
     // console.log('refresh', REFRESH_TOKEN);
@@ -81,11 +80,11 @@ async function getToken(authCode) {
 async function refreshToken() {
   console.log('refreshToken');
 
-  if (!REFRESH_TOKEN && !localStorage.getItem('refresh_token')) {
+  if (!REFRESH_TOKEN && !sessionStorage.getItem('refresh_token')) {
     console.error('refresh_token not exist');
     return
   } else if (!REFRESH_TOKEN) {
-    REFRESH_TOKEN = localStorage.getItem('refresh_token');
+    REFRESH_TOKEN = sessionStorage.getItem('refresh_token');
   }
 
   try {
