@@ -25,8 +25,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "token": "node src/get_credentials.js",
-    "api": "node src/api_test.js",
+    "token": "node api_test/api_token.js",
+    "api": "node api_test/api_test.js",
     "predeploy": "yarn build",
     "deploy": "gh-pages -d build"
   },
