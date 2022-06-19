@@ -108,30 +108,30 @@ async function refreshToken() {
   }
 }
 
-
-async function getLeagueKey() {
-  try {
-    // const query = `${baseURL}/game/mlb`;  // get game_key=412
-    const query = `${baseURL}/users;use_login=1/games;game_keys=412/leagues`;
-    const results = await makeAPIrequest(query);
-    return results.users.user.games.game.leagues.league.league_key;
-  } catch (err) {
-    console.error(`Error in getLeagueKey(): ${err.response.data}`);
-    return err;
-  }
-}
-
-
 const apis = {
   async getMetadata() {
+    let metaData = {};
+
     try {
-      LEAGUE_KEY = await getLeagueKey();
-      const query = `${baseURL}/league/${LEAGUE_KEY};out=teams,settings`;
-      const results = await makeAPIrequest(query);
-      return results.league;
+      // Get game info: game_key, game_weeks
+      let query = `${baseURL}/game/mlb;out=game_weeks`;
+      let results = await makeAPIrequest(query);
+      metaData.game = results.game;
+
+      // Get league key
+      query = `${baseURL}/users;use_login=1/games;game_keys=${metaData.game.game_key}/leagues`
+      results = await makeAPIrequest(query);
+      LEAGUE_KEY = results.users.user.games.game.leagues.league.league_key;
+      
+      // Get league info: teams, league_settings
+      query = `${baseURL}/league/${LEAGUE_KEY};out=teams,settings`;
+      results = await makeAPIrequest(query);
+      metaData.league = results.league;
+
+      return metaData;
     } catch (err) {
       console.error(`Error in getMetadata(): ${err}`);
-      return err;
+      return null;
     }
   },
 

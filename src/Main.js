@@ -18,6 +18,7 @@ class Main extends Component {
     super(props)
     this.state = {
       fetching: true,
+      game: {},
       league: {},
     }
   }
@@ -30,12 +31,15 @@ class Main extends Component {
     if (authCode){
       await getToken(authCode);
     }
-    const league = await apis.getMetadata();
-    this.setState({
-      fetching: false,
-      league: league,
-    })
-    return league;
+    const metaData = await apis.getMetadata();
+    if (metaData !== null) {
+      this.setState({
+        fetching: false,
+        league: metaData.league,
+        game: metaData.game,
+      })
+    }
+    return metaData;
   }
 
   fetchingElement = <h3 className="fetching-text">Fetching</h3>

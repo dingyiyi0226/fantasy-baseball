@@ -15,8 +15,8 @@ function Home(props) {
 
   useEffect(() => {
     const fetchMetadata = async (authCode) => {
-      const league_meta = await getMetadataWrapper(authCode);
-      setLeague(league_meta);
+      const metaData = await getMetadataWrapper(authCode);
+      setLeague(metaData.league);
     }
 
     fetchMetadata(authCode)
