@@ -37,6 +37,7 @@ class Sidebar extends Component {
       home: 'Home',
       weekly: 'Weekly Result',
       total: 'Total Result',
+      team: 'Team Weekly Stats',
     }
   }
   render() {

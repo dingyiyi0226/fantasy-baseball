@@ -198,6 +198,58 @@ const apis = {
       return err;
     }
   },
+
+  async getTeamRosterStatsByDate(team, date) {
+
+    const team_key = `${LEAGUE_KEY}.t.${team}`;
+    const query = `${baseURL}/team/${team_key}/roster;date=${date}/players;out=stats`
+
+    try {
+      const results = await makeAPIrequest(query);
+      return results.team.roster.players.player
+    } catch (err) {
+      console.error(`Error in getTeamStatsByDate(): ${err}`);
+      return err;
+    }
+  },
+
+  async getTeamRosterByDate(team, date) {
+    const team_key = `${LEAGUE_KEY}.t.${team}`;
+    const query = `${baseURL}/team/${team_key}/roster;date=${date}/players`
+
+    try {
+      const results = await makeAPIrequest(query);
+      return results.team.roster.players.player
+    } catch (err) {
+      console.error(`Error in getTeamRosterByDate(): ${err}`);
+      return err;
+    }
+  },
+
+  async getPlayerAllStatsByDate(player_keys, date) {
+
+    const query = `${baseURL}/players;player_keys=${player_keys.join(',')}/stats;type=date;date=${date}`
+
+    try {
+      const results = await makeAPIrequest(query);
+      return results.players.player
+    } catch (err) {
+      console.error(`Error in getPlayerStatsByDate(): ${err}`);
+      return err;
+    }
+  },
+
+  async getAllStats() {
+    const query = `${baseURL}/game/mlb/stat_categories`;
+    try {
+      const results = await makeAPIrequest(query);
+      return results.game.stat_categories.stats.stat;
+    } catch (err) {
+      console.error(`Error in getPlayerStatsByDate(): ${err}`);
+      return err;
+    }
+  }
+
 }
 
 export { apis, getToken };

@@ -7,6 +7,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Home from './Home.js'
 import Sidebar from './Sidebar.js';
 import Stats from './Stats.js'
+import Team from './Team.js'
 import TotalStats from './TotalStats.js'
 
 import { apis, getToken } from './apis.js'
@@ -55,6 +56,7 @@ class Main extends Component {
             <Route path="/home" element=<Home getMetadata={this.getMetadata} league={this.state.league}/> />
             <Route path="/weekly" element={this.state.fetching ? this.fetchingElement : <Stats league={this.state.league}/>} />
             <Route path="/total" element={this.state.fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
+            <Route path="/team" element={this.state.fetching ? this.fetchingElement : <Team league={this.state.league} game={this.state.game}/>} />
           </Routes>
         </Box>
       </React.Fragment>
