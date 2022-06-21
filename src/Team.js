@@ -176,8 +176,6 @@ class Team extends Component {
   }
 
   getTeamStats = async (team) => {
-    let roster;
-    let stat;
     let stats = {};
     let rosters = {};
     let total = {};
@@ -185,8 +183,8 @@ class Team extends Component {
     this.allStatCate = await apis.getAllStats();
 
     await Promise.all(this.dates.map(async (date) => {
-      roster = await apis.getTeamRosterByDate(team || this.state.team, date);
-      stat = await apis.getPlayerAllStatsByDate(roster.map(p => p.player_key), date);
+      const roster = await apis.getTeamRosterByDate(team || this.state.team, date);
+      const stat = await apis.getPlayerAllStatsByDate(roster.map(p => p.player_key), date);
       stats[date] = stat;
       rosters[date] = roster;
       total[date] = this.calculateDailyStats(date, roster, stat);
