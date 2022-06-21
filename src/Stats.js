@@ -46,6 +46,14 @@ class Stats extends Component {
       stats[team.team_id] = team.team_stats.stats.stat.filter(s => s.stat_id !== 60 && s.stat_id !== 50);
     })
 
+    Object.keys(stats).forEach(team_id => {
+      stats[team_id].forEach((stat, i) => {
+        if (stat.value === 'INF') {
+          stats[team_id][i].value = Infinity;
+        }
+      })
+    })
+
     stats = this.calulateRank(stats);
     let h2h = this.calculateH2H(stats);
     this.setState(state => ({
