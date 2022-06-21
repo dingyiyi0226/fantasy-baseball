@@ -20,6 +20,7 @@ class Stats extends Component {
       week: props.league.current_week,
       type: 'value', // 'value', 'rank'
       stats: {},
+      h2h: {},
       matchups: [],
       matchupColors: [],
     }
@@ -31,6 +32,11 @@ class Stats extends Component {
     this.matchupColors = [
       '#f9f8f1', '#F4FAE6', '#D9E5FA', '#F1D9FA', '#FAF2E1'
     ]
+    this.color = {
+      win: '#F1D9FA',
+      lose: '#FAF2E1',
+      tie: '#f9f8f1'
+    }
   }
 
   getTeamsStatsByWeek = async (week=null) => {
@@ -40,9 +46,11 @@ class Stats extends Component {
       stats[team.team_id] = team.team_stats.stats.stat.filter(s => s.stat_id !== 60 && s.stat_id !== 50);
     })
 
-    stats = this.calulateRank(stats)
+    stats = this.calulateRank(stats);
+    let h2h = this.calculateH2H(stats);
     this.setState(state => ({
       stats: stats,
+      h2h: h2h
     }))
   }
 
@@ -84,6 +92,45 @@ class Stats extends Component {
       })
     })
     return allStats
+  }
+
+  calculateH2H = (allStats) => {
+    let h2h = {};
+    this.teams.forEach(team => {
+      h2h[team.team_id] = {};
+
+      let myRanks = allStats[team.team_id].reduce((pv, v) => ({...pv, [v.stat_id]: v.rank}), {});
+
+      Object.keys(allStats).filter(team_id => Number(team_id) !== team.team_id).forEach(team_id => {
+        let opRanks = allStats[team_id].reduce((pv, v) => ({...pv, [v.stat_id]: v.rank}), {});
+        let win = 0;
+        let lose = 0;
+        this.statCate.forEach(s => {
+          if (myRanks[s.stat_id] < opRanks[s.stat_id]) {
+            win += 1;
+          }
+          else if (myRanks[s.stat_id] > opRanks[s.stat_id]) {
+            lose += 1;
+          }
+        })
+        let status;
+        if (win > lose) {
+          status = 'W';
+        } else if (win < lose) {
+          status = 'L';
+        } else {
+          status = 'T';
+        }
+        let result = {
+          win: win,
+          lose: lose,
+          status: status
+        };
+        h2h[team.team_id][team_id] = result;
+      })
+    })
+
+    return h2h;
   }
 
   onSelectWeek = (e) => {
@@ -152,82 +199,129 @@ class Stats extends Component {
         </Grid>
 
         {this.state.fetchStats ?
-          <h3 className="fetching-text">Fetching</h3> :
-          <TableContainer component={Paper}>
-            <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
-              <TableHead>
-                <TableRow>
-                  <TableCell> </TableCell>
-                  {this.teams.map((team) => (
-                    <TableCell width="9%" align="right" style={{backgroundColor: this.matchupColors[this.state.matchupColors[team.team_id]]}}>
-                      {team.name}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {this.statCate.map((stat) => (
-                  <TableRow
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell align="right" component="th" scope="row">
-                      {stat.display_name}
-                    </TableCell>
-                    {this.state.type === 'value' ?
-                      Object.keys(this.state.stats).map((teamID) => (
-                      <TableCell align="right">
-                        {this.state.stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).value}
+          <h3 className="fetching-text">Fetching</h3> : (
+            <React.Fragment>
+              <TableContainer component={Paper} sx={{ my: 2 }}>
+                <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell> </TableCell>
+                      {this.teams.map((team) => (
+                        <TableCell width="9%" align="right" style={{backgroundColor: this.matchupColors[this.state.matchupColors[team.team_id]]}}>
+                          {team.name}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {this.statCate.map((stat) => (
+                      <TableRow
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      >
+                        <TableCell align="right" component="th" scope="row">
+                          {stat.display_name}
+                        </TableCell>
+                        {this.state.type === 'value' ?
+                          Object.keys(this.state.stats).map((teamID) => (
+                          <TableCell align="right">
+                            {this.state.stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).value}
+                          </TableCell>
+                          )) :
+                          Object.keys(this.state.stats).map((teamID) => (
+                          <TableCell align="right">
+                            {this.state.stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).rank}
+                          </TableCell>
+                          ))
+                        }
+                      </TableRow>
+                    ))}
+                    <TableRow
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell align="right" component="th" scope="row">
+                        Avg. Rank
                       </TableCell>
-                      )) :
-                      Object.keys(this.state.stats).map((teamID) => (
-                      <TableCell align="right">
-                        {this.state.stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).rank}
+                      {this.teams.map(team =>
+                        <TableCell align="right">
+                          {(Object.values(this.state.stats[team.team_id])
+                            .reduce((pv, v) => pv+v.rank, 0) / 14).toFixed(2)}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                    <TableRow
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell align="right" component="th" scope="row">
+                        Win/Loss
                       </TableCell>
-                      ))
-                    }
-                  </TableRow>
-                ))}
-                <TableRow
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell align="right" component="th" scope="row">
-                    Avg. Rank
-                  </TableCell>
-                  {this.teams.map(team =>
-                    <TableCell align="right">
-                      {(Object.values(this.state.stats[team.team_id])
-                        .reduce((pv, v) => pv+v.rank, 0) / 14).toFixed(2)}
-                    </TableCell>
-                  )}
-                </TableRow>
-                <TableRow
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                >
-                  <TableCell align="right" component="th" scope="row">
-                    Win/Loss
-                  </TableCell>
-                  {this.teams.map(team => {
-                    if (this.state.week >= this.league.current_week) {
-                      return <TableCell align="right"> N/A </TableCell>
-                    }
-                    const tied_keys = []
-                    this.state.matchups.filter(matchup => matchup.is_tied)
-                      .forEach(matchup => {
-                        tied_keys.push(...matchup.teams.team.map(team => team.team_key))
-                      })
-                    const winner_keys = this.state.matchups.map(matchup => matchup.winner_team_key)
-                    if (tied_keys.includes(team.team_key)) {
-                      return <TableCell align="right"> T </TableCell>
-                    } else if (winner_keys.includes(team.team_key)) {
-                      return <TableCell align="right"> W </TableCell>
-                    } else {
-                      return <TableCell align="right"> L </TableCell>
-                    }
-                  })}
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
+                      {this.teams.map(team => {
+                        if (this.state.week >= this.league.current_week) {
+                          return <TableCell align="right"> N/A </TableCell>
+                        }
+                        const tied_keys = []
+                        this.state.matchups.filter(matchup => matchup.is_tied)
+                          .forEach(matchup => {
+                            tied_keys.push(...matchup.teams.team.map(team => team.team_key))
+                          })
+                        const winner_keys = this.state.matchups.map(matchup => matchup.winner_team_key)
+                        if (tied_keys.includes(team.team_key)) {
+                          return <TableCell align="right"> T </TableCell>
+                        } else if (winner_keys.includes(team.team_key)) {
+                          return <TableCell align="right"> W </TableCell>
+                        } else {
+                          return <TableCell align="right"> L </TableCell>
+                        }
+                      })}
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+
+              <TableContainer component={Paper} sx={{ my: 2 }}>
+                <Table sx={{ minWidth: 650 }} size="small" aria-label="h2h table">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell> </TableCell>
+                      {this.teams.map((team) => (
+                        <TableCell width="9%" align="right">
+                          {team.name}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {this.teams.map(team => (
+                      <TableRow
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      >
+                        <TableCell align="right" component="th" scope="row">
+                          {team.name}
+                        </TableCell>
+                        {this.teams.map(teamRow => {
+                          if (team.team_id === teamRow.team_id) {
+                            return <TableCell align="right"></TableCell>;
+                          }
+                          else {
+                            let result = this.state.h2h[team.team_id][teamRow.team_id];
+                            let color;
+                            if (result.status === 'W') {
+                              color = this.color.win;
+                            } else if (result.status === 'L') {
+                              color = this.color.lose;
+                            } else {
+                              color = this.color.tie;
+                            }
+                            return <TableCell align="right" style={{backgroundColor: color}}>{`${result.win}-${result.lose}`}</TableCell>;
+                          }
+                        })}
+                      </TableRow>
+                    ))}
+
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </React.Fragment>
+          )
         }
       </Container>
     )
