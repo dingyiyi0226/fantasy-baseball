@@ -335,7 +335,7 @@ class Stats extends Component {
                             } else {
                               color = this.color.tie;
                             }
-                            return <TableCell align="right" style={{backgroundColor: color}}>{`${result.win}-${result.lose}`}</TableCell>;
+                            return <TableCell align="right" style={{backgroundColor: color}}>{`${result.lose}-${result.win}`}</TableCell>;
                           }
                         })}
                       </TableRow>
