@@ -141,6 +141,22 @@ class Stats extends Component {
     return h2h;
   }
 
+  calculateTeamH2HSum = (teamH2H) => {
+    let win = 0;
+    let lose = 0;
+    let tie = 0;
+    Object.values(teamH2H).forEach(opTeam => {
+      if (opTeam.status === 'W') {
+        win += 1;
+      } else if (opTeam.status === 'L') {
+        lose += 1;
+      } else {
+        tie += 1;
+      }
+    })
+    return `${win}-${lose}-${tie}`;
+  }
+
   onSelectWeek = (e) => {
     if (this.state.fetchStats) {
       return
@@ -324,7 +340,14 @@ class Stats extends Component {
                         })}
                       </TableRow>
                     ))}
-
+                    <TableRow>
+                      <TableCell align="right">W-L-T</TableCell>
+                      {this.teams.map((team) => (
+                        <TableCell align="right">
+                          {this.calculateTeamH2HSum(this.state.h2h[team.team_id])}
+                        </TableCell>
+                      ))}
+                    </TableRow>
                   </TableBody>
                 </Table>
               </TableContainer>
