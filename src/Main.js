@@ -10,7 +10,8 @@ import Stats from './Stats.js'
 import Team from './Team.js'
 import TotalStats from './TotalStats.js'
 
-import { apis, getToken } from './apis.js'
+import { apis } from './utils/apis.js'
+import { getToken } from './utils/auth.js'
 
 
 class Main extends Component {

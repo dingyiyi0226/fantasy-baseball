@@ -1,27 +1,20 @@
 import axios from 'axios'
 import { XMLParser } from 'fast-xml-parser'
 
+import { getToken, refreshToken } from './auth.js'
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const baseURL = `${process.env.REACT_APP_BACKEND_URL}/api`
 let LEAGUE_KEY = '';
-let ACCESS_TOKEN = '';
-let REFRESH_TOKEN = '';
 
 async function makeAPIrequest(url) {
-  if (!ACCESS_TOKEN && !sessionStorage.getItem('access_token')) {
+  const ACCESS_TOKEN = sessionStorage.getItem('access_token');
+  if (!ACCESS_TOKEN) {
     console.error('access_token not exists');
-  } else if (!ACCESS_TOKEN) {
-    ACCESS_TOKEN = sessionStorage.getItem('access_token');
-    REFRESH_TOKEN = sessionStorage.getItem('refresh_token');
-    console.log('get token from local storage');
   }
 
   let response;
   try {
-    response = await axios({
-      url,
-      method: "get",
+    response = await axios.get(url, {
       headers: {
         Authorization: `Bearer ${ACCESS_TOKEN}`,
         "Content-Type": "application/x-www-form-urlencoded",
@@ -39,72 +32,9 @@ async function makeAPIrequest(url) {
       await refreshToken();
       return makeAPIrequest(url);
     } else {
-      console.error(`Error with credentials in makeAPIrequest(): ${err.response.data}`);
+      console.error(`Error in makeAPIrequest(): ${err.response.data}`);
     }
     return err;
-  }
-}
-
-async function getToken(authCode) {
-  // console.log('getToken', authCode);
-
-  if (ACCESS_TOKEN || sessionStorage.getItem('access_token')) {
-    console.log('auth code existed');
-    return
-  }
-
-  try {
-    let response = await axios.get(`${BACKEND_URL}/token`, {
-      params: {
-        code: authCode
-      },
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    });
-    ACCESS_TOKEN = response.data.access_token;
-    REFRESH_TOKEN = response.data.refresh_token;
-
-    sessionStorage.setItem('access_token', ACCESS_TOKEN);
-    sessionStorage.setItem('refresh_token', REFRESH_TOKEN);
-
-    // console.log('access', ACCESS_TOKEN);
-    // console.log('refresh', REFRESH_TOKEN);
-
-  } catch (error) {
-    console.error(`Error in getToken(): ${error.response.data}`);
-    console.error(error.config);
-  }
-}
-
-async function refreshToken() {
-  console.log('refreshToken');
-
-  if (!REFRESH_TOKEN && !sessionStorage.getItem('refresh_token')) {
-    console.error('refresh_token not exist');
-    return
-  } else if (!REFRESH_TOKEN) {
-    REFRESH_TOKEN = sessionStorage.getItem('refresh_token');
-  }
-
-  try {
-    let response = await axios.get(`${BACKEND_URL}/refresh`, {
-      params: {
-        refresh_token: REFRESH_TOKEN
-      },
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    });
-    ACCESS_TOKEN = response.data.access_token;
-    REFRESH_TOKEN = response.data.refresh_token;
-
-    // console.log('access', ACCESS_TOKEN);
-    // console.log('refresh', REFRESH_TOKEN);
-
-  } catch (error) {
-    console.error(`Error in refresh_token(): ${error.response.data}`);
-    console.error(error.config);
   }
 }
 
@@ -137,11 +67,9 @@ const apis = {
 
   async getTeamsStatsByWeek(teamNum, week) {
     try {
-      let team_keys = `${LEAGUE_KEY}.t.1`;
-      for (let i=2;i<=teamNum;i++){
-        team_keys += `,${LEAGUE_KEY}.t.${i}`;
-      }
-      const query = `${baseURL}/teams;team_keys=${team_keys}/stats;type=week;week=${week}`;
+      let team_keys = [...Array(teamNum).keys()].map(i => `${LEAGUE_KEY}.t.${i+1}`);
+
+      const query = `${baseURL}/teams;team_keys=${team_keys.join(',')}/stats;type=week;week=${week}`;
       const results = await makeAPIrequest(query);
       return results.teams.team;
     } catch (err) {
@@ -151,12 +79,10 @@ const apis = {
   },
 
   async getTeamStatsUntilWeek(team, week) {
-    let week_keys = '1'
-    for (let i=2;i<=week;i++){
-      week_keys += `,${i}`;
-    }
 
-    const query = `${baseURL}/team/${LEAGUE_KEY}.t.${team}/matchups;weeks=${week_keys}`;
+    let week_keys = [...Array(week).keys()].map(i => i+1);
+
+    const query = `${baseURL}/team/${LEAGUE_KEY}.t.${team}/matchups;weeks=${week_keys.join(',')}`;
 
     try {
       const results = await makeAPIrequest(query);
@@ -180,15 +106,10 @@ const apis = {
 
   async getMatchupsUntilWeek(teamNum, week) {
 
-    let team_keys = `${LEAGUE_KEY}.t.1`;
-    for (let i=2;i<=teamNum;i++){
-      team_keys += `,${LEAGUE_KEY}.t.${i}`;
-    }
-    let week_keys = '1'
-    for (let i=2;i<=week;i++){
-      week_keys += `,${i}`;
-    }
-    const query = `${baseURL}/teams;team_keys=${team_keys}/matchups;weeks=${week_keys}`;
+    let team_keys = [...Array(teamNum).keys()].map(i => `${LEAGUE_KEY}.t.${i+1}`);
+    let week_keys = [...Array(week).keys()].map(i => i+1);
+
+    const query = `${baseURL}/teams;team_keys=${team_keys.join(',')}/matchups;weeks=${week_keys.join(',')}`;
 
     try {
       const results = await makeAPIrequest(query);

@@ -11,8 +11,8 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 
-import { apis } from './apis.js';
-import composite_stats from './composite_stats.js';
+import { apis } from './utils/apis.js';
+import composite_stats from './utils/composite_stats.js';
 
 
 class Team extends Component {
