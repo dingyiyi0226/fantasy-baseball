@@ -232,7 +232,7 @@ class Team extends Component {
               onChange={this.onSelectWeek}
             >
               {[...Array(this.league.current_week-this.league.start_week+1).keys()].map(i => (
-                <MenuItem value={i+1} key={i+1}>{i+1}</MenuItem>
+                <MenuItem value={i+this.league.start_week} key={i+this.league.start_week}>{i+this.league.start_week}</MenuItem>
               ))}
 
             </Select>
