@@ -2,18 +2,18 @@ import axios from 'axios'
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
-function isLogin() {
+function tokenExisted() {
   return sessionStorage.getItem('access_token') !== null;
 }
 
-function logout() {
+function clearToken() {
   sessionStorage.clear();
 }
 
 async function getToken(authCode) {
   console.debug('getToken', authCode);
 
-  if (isLogin()) {
+  if (tokenExisted()) {
     console.debug('User is already login');
     return
   }
@@ -42,7 +42,7 @@ async function refreshToken() {
 
   const REFRESH_TOKEN = sessionStorage.getItem('refresh_token');
 
-  if (!isLogin()) {
+  if (!tokenExisted()) {
     console.error('User not login');
     return
   }
@@ -66,4 +66,4 @@ async function refreshToken() {
   }
 }
 
-export { getToken, refreshToken, isLogin, logout };
+export { getToken, refreshToken, tokenExisted, clearToken };

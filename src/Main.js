@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Routes, Route } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -11,7 +11,6 @@ import Team from './Team.js'
 import TotalStats from './TotalStats.js'
 
 import { apis } from './utils/apis.js'
-import { getToken } from './utils/auth.js'
 
 
 class Main extends Component {
@@ -26,22 +25,16 @@ class Main extends Component {
   }
 
   componentDidMount() {
-    this.getMetadata(null);
+    this.getMetadata();
   }
 
-  getMetadata = async (authCode) => {
-    if (authCode){
-      await getToken(authCode);
-    }
+  getMetadata = async () => {
     const metaData = await apis.getMetadata();
-    if (metaData !== null) {
-      this.setState({
-        fetching: false,
-        league: metaData.league,
-        game: metaData.game,
-      })
-    }
-    return metaData;
+    this.setState({
+      fetching: false,
+      league: metaData.league,
+      game: metaData.game,
+    })
   }
 
   fetchingElement = <h3 className="fetching-text">Fetching</h3>
@@ -54,10 +47,13 @@ class Main extends Component {
         <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
           <Toolbar variant="dense"/>
           <Routes>
-            <Route path="/home" element=<Home getMetadata={this.getMetadata} league={this.state.league}/> />
-            <Route path="/weekly" element={this.state.fetching ? this.fetchingElement : <Stats league={this.state.league}/>} />
-            <Route path="/total" element={this.state.fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
-            <Route path="/team" element={this.state.fetching ? this.fetchingElement : <Team league={this.state.league} game={this.state.game}/>} />
+            <Route path="/">
+              <Route index element=<Navigate to="home" replace={true} />/>
+              <Route path="home" element={this.state.fetching ? this.fetchingElement : <Home league={this.state.league}/>} />
+              <Route path="weekly" element={this.state.fetching ? this.fetchingElement : <Stats league={this.state.league}/>} />
+              <Route path="total" element={this.state.fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
+              <Route path="team" element={this.state.fetching ? this.fetchingElement : <Team league={this.state.league} game={this.state.game}/>} />
+            </Route>
           </Routes>
         </Box>
       </React.Fragment>
