@@ -2,11 +2,11 @@ import React, { Component } from 'react'
 
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import Paper from '@mui/material/Paper';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
 
 import { apis } from './utils/apis.js'
 
@@ -22,7 +22,7 @@ class TotalStats extends Component {
     this.state = {
       fetching: true,
       stats: {},
-      calType: 'all', // 'all', 'batting', 'pitching'
+      statTypes: ['B', 'P'], // B: batting, P: pitching
       sum: {},
       rank: {},
     }
@@ -54,7 +54,7 @@ class TotalStats extends Component {
         })
       })
     })
-    const calVal = this.calStats(this.state.calType, allStats);
+    const calVal = this.calStats(this.state.statTypes, allStats);
 
     this.setState({
       stats: allStats,
@@ -64,7 +64,7 @@ class TotalStats extends Component {
     })
   }
 
-  calStats = (calType, stats=null) => {
+  calStats = (statTypes, stats=null) => {
     let sum = {};
     let rank = {};
 
@@ -73,32 +73,16 @@ class TotalStats extends Component {
     }
 
     this.teams.forEach(team => {
-      if (calType === 'pitching') {
-        let result = {'win': 0, 'lose': 0, 'tie': 0};
-        for (let [stat, val] of Object.entries(stats[team.team_id])) {
-          if (this.statCate.find(s => s.stat_id === Number(stat)).position_type === 'P') {
-            result.win += val.win;
-            result.lose += val.lose;
-            result.tie += val.tie;
-          }
+      let result = {'win': 0, 'lose': 0, 'tie': 0};
+      for (let [stat, val] of Object.entries(stats[team.team_id])) {
+        if (statTypes.includes(this.statCate.find(s => s.stat_id === Number(stat)).position_type)) {
+          result.win += val.win;
+          result.lose += val.lose;
+          result.tie += val.tie;
         }
-        sum[team.team_id] = result;
       }
-      else if (calType === 'batting') {
-        let result = {'win': 0, 'lose': 0, 'tie': 0};
-        for (let [stat, val] of Object.entries(stats[team.team_id])) {
-          if (this.statCate.find(s => s.stat_id === Number(stat)).position_type === 'B') {
-            result.win += val.win;
-            result.lose += val.lose;
-            result.tie += val.tie;
-          }
-        }
-        sum[team.team_id] = result;
-      }
-      else {
-        sum[team.team_id] = Object.values(stats[team.team_id])
-          .reduce((pv, v) => ({'win': pv.win+v.win, 'lose': pv.lose+v.lose, 'tie': pv.tie+v.tie}), {'win': 0, 'lose': 0, 'tie': 0});
-      }
+      sum[team.team_id] = result;
+
     })
 
     const points = this.teams.map(team => sum[team.team_id].win - sum[team.team_id].lose)
@@ -110,16 +94,23 @@ class TotalStats extends Component {
     return {'sum': sum, 'rank': rank}
   }
 
-  onSelectType = (e) => {
-    if (this.state.fetching) {
-      return
-    }
+  onChangeType = (e) => {
+    this.setState(state => {
+      let types = state.statTypes;
+      if (!e.target.checked && types.includes(e.target.value)) {
+        types = types.filter(type => type !== e.target.value)
+      }
+      else if (e.target.checked && !types.includes(e.target.value)){
+        types.push(e.target.value);
+      }
 
-    const calVal = this.calStats(e.target.value);
-    this.setState({
-      calType: e.target.value,
-      sum: calVal.sum,
-      rank: calVal.rank,
+      const calVal = this.calStats(types);
+
+      return {
+        statTypes: types,
+        sum: calVal.sum,
+        rank: calVal.rank,
+      };
     })
   }
 
@@ -131,22 +122,14 @@ class TotalStats extends Component {
     return (
       <Container>
         <Grid container spacing={2}>
-          <Grid item xs={3}>
-            <InputLabel id="type-label">Type</InputLabel>
-            <Select
-              labelId="type-label"
-              id="type-selector"
-              value={this.state.calType}
-              onChange={this.onSelectType}
-            >
-              <MenuItem value="all">All</MenuItem>
-              <MenuItem value="batting">Batting</MenuItem>
-              <MenuItem value="pitching">Pitching</MenuItem>
-
-            </Select>
+          <Grid item xs={5}>
+            <FormGroup row>
+              <FormControlLabel control={<Checkbox defaultChecked onChange={this.onChangeType} value="B"/>} label="Batting" />
+              <FormControlLabel control={<Checkbox defaultChecked onChange={this.onChangeType} value="P"/>} label="Pitching" />
+            </FormGroup>
           </Grid>
           
-          <Grid item xs={9}>
+          <Grid item xs={7}>
           </Grid>
 
         </Grid>
@@ -164,14 +147,8 @@ class TotalStats extends Component {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {this.statCate.filter(stat => {
-                  if (this.state.calType === 'pitching'){
-                    return stat.position_type === 'P'
-                  } else if (this.state.calType === 'batting') {
-                    return stat.position_type === 'B'
-                  } else {
-                    return true
-                  }}).map((stat) => (
+                {this.statCate.filter(stat => this.state.statTypes.includes(stat.position_type))
+                  .map((stat) => (
                   <TableRow
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
