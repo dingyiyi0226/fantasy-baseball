@@ -1,0 +1,349 @@
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+
+
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Paper from '@mui/material/Paper';
+import Select from '@mui/material/Select';
+import Container from '@mui/material/Container';
+import Grid from '@mui/material/Grid';
+
+import { apis } from '../utils/apis.js';
+
+
+function Weekly(props) {
+
+  const [fetching, setFetching] = useState(true);
+  const [type, setType] = useState('value');  // 'value'|'rank'
+  const [stats, setStats] = useState({});  // {<team_id>: [{stat_id:, value:, rank:}, ]}
+  const [h2h, setH2H] = useState({});      // {<team_id>: {<opteam_id>: {win:, lose:, status: 'win'|'lose'|'tie' }}}
+  const [matchups, setMatchups] = useState([]);
+  const [matchupPair, setMatchupPair] = useState([]);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const matchupColors = [
+    '#f9f8f1', '#F4FAE6', '#D9E5FA', '#F1D9FA', '#FAF2E1'
+  ]
+  const color = {
+    win: '#F1D9FA',
+    lose: '#FAF2E1',
+    tie: '#f9f8f1'
+  }
+
+  useEffect(() => {
+    const teams = props.league.teams.team;
+    const statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
+    const week = searchParams.get('week');
+    if (!week) {
+      setSearchParams({week: props.league.current_week});
+      return;
+    }
+
+    const fetchStats = async (week) => {
+      await getTeamsStatsByWeek(week);
+      await getMatchupsByWeek(week);
+      console.log('getall');
+      setFetching(false);
+    }
+
+    const getTeamsStatsByWeek = async (week) => {
+
+      let stats = {}
+      const allStats = await apis.getTeamsStatsByWeek(teams.length, week)
+      allStats.forEach(team => {
+        stats[team.team_id] = team.team_stats.stats.stat.filter(s => s.stat_id !== 60 && s.stat_id !== 50);
+      })
+
+      Object.keys(stats).forEach(team_id => {
+        stats[team_id].forEach((stat, i) => {
+          if (stat.value === 'INF') {
+            stats[team_id][i].value = Infinity;
+          }
+        })
+      })
+
+      stats = calulateRank(stats);
+      let h2h = calculateH2H(stats);
+      setStats(stats);
+      setH2H(h2h);
+    }
+
+    const getMatchupsByWeek = async (week) => {
+      let matchups = await apis.getMatchupsByWeek(week)
+      let matchupPair = {}
+      matchups.forEach((matchup, i) => {
+        matchup.teams.team.forEach(team => {
+          matchupPair[team.team_id] = i
+        })
+      })
+      setMatchupPair(matchupPair);
+      setMatchups(matchups);
+    }
+
+    const calulateRank = (allStats) => {
+
+      let statsT = {}
+      statCate.forEach(s => {
+        statsT[s.stat_id] = []
+      })
+
+      Object.values(allStats).forEach(stats => {
+        stats.forEach(s => {
+          statsT[s.stat_id].push(s.value)
+        })
+      })
+
+      for (let [stat_id, stat] of Object.entries(statsT)){
+        const sort_order = statCate.find(s => s.stat_id === Number(stat_id)).sort_order === 0;
+        stat.sort((a, b) => sort_order ? a-b : b-a)
+      }
+
+      Object.values(allStats).forEach(stats => {
+        stats.forEach(stat => {
+          stat.rank = statsT[stat.stat_id].indexOf(stat.value) + 1;
+        })
+      })
+      return allStats
+    }
+
+    const calculateH2H = (allStats) => {
+      let h2h = {};
+      teams.forEach(team => {
+        h2h[team.team_id] = {};
+
+        let myRanks = allStats[team.team_id].reduce((pv, v) => ({...pv, [v.stat_id]: v.rank}), {});
+
+        Object.keys(allStats).filter(team_id => Number(team_id) !== team.team_id).forEach(team_id => {
+          let opRanks = allStats[team_id].reduce((pv, v) => ({...pv, [v.stat_id]: v.rank}), {});
+          let win = 0;
+          let lose = 0;
+          statCate.forEach(s => {
+            if (myRanks[s.stat_id] < opRanks[s.stat_id]) {
+              win += 1;
+            }
+            else if (myRanks[s.stat_id] > opRanks[s.stat_id]) {
+              lose += 1;
+            }
+          })
+          let status;
+          if (win > lose) {
+            status = 'win';
+          } else if (win < lose) {
+            status = 'lose';
+          } else {
+            status = 'tie';
+          }
+          let result = {
+            win: win,
+            lose: lose,
+            status: status
+          };
+          h2h[team.team_id][team_id] = result;
+        })
+      })
+      return h2h;
+    }
+
+    fetchStats(week);
+  }, [props.league, searchParams, setSearchParams])
+
+
+  const TeamH2HSumStr = (teamH2H) => {
+    let win = 0;
+    let lose = 0;
+    let tie = 0;
+    Object.values(teamH2H).forEach(opTeam => {
+      if (opTeam.status === 'win') {
+        win += 1;
+      } else if (opTeam.status === 'lose') {
+        lose += 1;
+      } else {
+        tie += 1;
+      }
+    })
+    return `${win}-${lose}-${tie}`;
+  }
+
+  const onSelectWeek = (e) => {
+    if (fetching) {
+      return;
+    }
+    setSearchParams({week: e.target.value});
+    setFetching(true);
+  }
+
+  const onSelectType = (e) => {
+    setType(e.target.value);
+  }
+
+  const league = props.league;
+  const teams = props.league.teams.team;
+  const statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
+
+  return (
+    <Container>
+      <Grid container spacing={2}>
+        <Grid item xs={3}>
+          <InputLabel id="week-label">Week</InputLabel>
+          <Select
+            labelId="week-label"
+            id="week-selector"
+            value={searchParams.get('week') || league.current_week}
+            onChange={onSelectWeek}
+          >
+            {[...Array(league.current_week-league.start_week+1).keys()].map(i => (
+              <MenuItem value={i+league.start_week} key={i+league.start_week}>{i+league.start_week}</MenuItem>
+            ))}
+
+          </Select>
+        </Grid>
+        <Grid item xs={3}>
+          <InputLabel id="type-label">Type</InputLabel>
+          <Select
+            labelId="type-label"
+            id="type-selector"
+            value={type}
+            onChange={onSelectType}
+          >
+            <MenuItem value="value">Value</MenuItem>
+            <MenuItem value="rank">Rank</MenuItem>
+
+          </Select>
+        </Grid>
+        <Grid item xs={6}>
+        </Grid>
+
+      </Grid>
+
+      {fetching ?
+        <h3 className="fetching-text">Fetching</h3> : (
+          <React.Fragment>
+            <TableContainer component={Paper} sx={{ my: 2 }}>
+              <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell> </TableCell>
+                    {teams.map((team) => (
+                      <TableCell width="9%" align="right" style={{backgroundColor: matchupColors[matchupPair[team.team_id]]}}>
+                        {team.name}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {statCate.map((stat) => (
+                    <TableRow
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell align="right" component="th" scope="row">
+                        {stat.display_name}
+                      </TableCell>
+                      {type === 'value' ?
+                        Object.keys(stats).map((teamID) => (
+                        <TableCell align="right">
+                          {stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).value}
+                        </TableCell>
+                        )) :
+                        Object.keys(stats).map((teamID) => (
+                        <TableCell align="right">
+                          {stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).rank}
+                        </TableCell>
+                        ))
+                      }
+                    </TableRow>
+                  ))}
+                  <TableRow
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell align="right" component="th" scope="row">
+                      Avg. Rank
+                    </TableCell>
+                    {teams.map(team =>
+                      <TableCell align="right">
+                        {(Object.values(stats[team.team_id])
+                          .reduce((pv, v) => pv+v.rank, 0) / 14).toFixed(2)}
+                      </TableCell>
+                    )}
+                  </TableRow>
+                  <TableRow
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell align="right" component="th" scope="row">
+                      Win/Loss
+                    </TableCell>
+                    {teams.map(team => {
+                      if (searchParams.get('week') >= league.current_week) {
+                        return <TableCell align="right"> N/A </TableCell>
+                      }
+                      const tied_keys = []
+                      matchups.filter(matchup => matchup.is_tied)
+                        .forEach(matchup => {
+                          tied_keys.push(...matchup.teams.team.map(team => team.team_key))
+                        })
+                      const winner_keys = matchups.map(matchup => matchup.winner_team_key)
+                      if (tied_keys.includes(team.team_key)) {
+                        return <TableCell align="right"> T </TableCell>
+                      } else if (winner_keys.includes(team.team_key)) {
+                        return <TableCell align="right"> W </TableCell>
+                      } else {
+                        return <TableCell align="right"> L </TableCell>
+                      }
+                    })}
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            <TableContainer component={Paper} sx={{ my: 2 }}>
+              <Table sx={{ minWidth: 650 }} size="small" aria-label="h2h table">
+                <TableHead>
+                  <TableRow>
+                    <TableCell> </TableCell>
+                    {teams.map((team) => (
+                      <TableCell width="9%" align="right">
+                        {team.name}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {teams.map(team => (
+                    <TableRow
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell align="right" component="th" scope="row">
+                        {team.name}
+                      </TableCell>
+                      {teams.map(teamRow => {
+                        if (team.team_id === teamRow.team_id) {
+                          return <TableCell align="right"></TableCell>;
+                        }
+                        else {
+                          let result = h2h[team.team_id][teamRow.team_id];
+                          return <TableCell align="right" style={{backgroundColor: color[result.status]}}>{`${result.lose}-${result.win}`}</TableCell>;
+                        }
+                      })}
+                    </TableRow>
+                  ))}
+                  <TableRow>
+                    <TableCell align="right">W-L-T</TableCell>
+                    {teams.map((team) => (
+                      <TableCell align="right">
+                        {TeamH2HSumStr(h2h[team.team_id])}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </React.Fragment>
+        )
+      }
+    </Container>
+  )
+}
+
+export default Weekly;
