@@ -13,20 +13,22 @@ import Grid from '@mui/material/Grid';
 import { apis } from '../utils/apis.js';
 
 
-function Weekly(props) {
+function Daily(props) {
 
   const [fetching, setFetching] = useState(true);
   const [type, setType] = useState('value');  // 'value'|'rank'
   const [stats, setStats] = useState({});  // {<team_id>: [{stat_id:, value:, rank:}, ]}
   const [h2h, setH2H] = useState({});      // {<team_id>: {<opteam_id>: {win:, lose:, status: 'win'|'lose'|'tie' }}}
-  const [matchups, setMatchups] = useState([]);
+
   const [matchupPair, setMatchupPair] = useState([]);
+  const [week, setWeek] = useState(props.league.current_week);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
   const matchupColors = [
     '#f9f8f1', '#F4FAE6', '#D9E5FA', '#F1D9FA', '#FAF2E1'
   ]
+
   const color = {
     win: '#F1D9FA',
     lose: '#FAF2E1',
@@ -36,22 +38,22 @@ function Weekly(props) {
   useEffect(() => {
     const teams = props.league.teams.team;
     const statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
-    const week = searchParams.get('week');
-    if (!week) {
-      setSearchParams({week: props.league.current_week});
+    const date = searchParams.get('date');
+    if (!date) {
+      const today = new Date();
+      setSearchParams({date: `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`});
       return;
     }
 
-    const fetchStats = async (week) => {
-      await getTeamsStatsByWeek(week);
-      await getMatchupsByWeek(week);
+    const fetchStats = async (date) => {
+      await getTeamsStatsByDate(date);
       setFetching(false);
     }
 
-    const getTeamsStatsByWeek = async (week) => {
+    const getTeamsStatsByDate = async (date) => {
 
       let teamsStats = {}
-      const teamsStatsRaw = await apis.getTeamsStatsByWeek(teams.length, week)
+      const teamsStatsRaw = await apis.getTeamsStatsByDate(teams.length, date)
       teamsStatsRaw.forEach(team => {
         teamsStats[team.team_id] = team.team_stats.stats.stat.filter(s => s.stat_id !== 60 && s.stat_id !== 50);
       })
@@ -68,18 +70,6 @@ function Weekly(props) {
       let h2h = calculateH2H(teamsStats);
       setStats(teamsStats);
       setH2H(h2h);
-    }
-
-    const getMatchupsByWeek = async (week) => {
-      let matchups = await apis.getMatchupsByWeek(week)
-      let matchupPair = {}
-      matchups.forEach((matchup, i) => {
-        matchup.teams.team.forEach(team => {
-          matchupPair[team.team_id] = i
-        })
-      })
-      setMatchupPair(matchupPair);
-      setMatchups(matchups);
     }
 
     const calulateRank = (teamsStats) => {
@@ -146,8 +136,28 @@ function Weekly(props) {
       return h2h;
     }
 
-    fetchStats(week);
+    fetchStats(date);
   }, [props.league, searchParams, setSearchParams])
+
+  useEffect(() => {
+    const fetchStats = async (week) => {
+      await getMatchupsByWeek(week);
+      setFetching(false);
+    }
+
+    const getMatchupsByWeek = async (week) => {
+      let matchups = await apis.getMatchupsByWeek(week)
+      let matchupPair = {}
+      matchups.forEach((matchup, i) => {
+        matchup.teams.team.forEach(team => {
+          matchupPair[team.team_id] = i
+        })
+      })
+      setMatchupPair(matchupPair);
+    }
+
+    fetchStats(week);
+  }, [week])
 
 
   const TeamH2HSumStr = (teamH2H) => {
@@ -167,15 +177,32 @@ function Weekly(props) {
   }
 
   const onSelectWeek = (e) => {
+    setWeek(e.target.value);
+  }
+
+  const onSelectDate = (e) => {
     if (fetching) {
       return;
     }
-    setSearchParams({week: e.target.value});
+    setSearchParams({date: e.target.value});
     setFetching(true);
   }
 
   const onSelectType = (e) => {
     setType(e.target.value);
+  }
+
+
+  const calculateDates = (week) => {
+    const dates = []
+    const gameWeek = props.game.game_weeks.game_week.find(w => w.week === week);
+
+    const start = new Date(gameWeek.start.split('-')[0], gameWeek.start.split('-')[1]-1, gameWeek.start.split('-')[2]);
+    const end = new Date(gameWeek.end.split('-')[0], gameWeek.end.split('-')[1]-1, gameWeek.end.split('-')[2]);
+    for (let d = start; d <= end; d.setDate(d.getDate()+1)) {
+      dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+    }
+    return dates;
   }
 
   const league = props.league;
@@ -185,12 +212,12 @@ function Weekly(props) {
   return (
     <Container>
       <Grid container spacing={2}>
-        <Grid item xs={3}>
+        <Grid item xs={2}>
           <InputLabel id="week-label">Week</InputLabel>
           <Select
             labelId="week-label"
             id="week-selector"
-            value={searchParams.get('week') || ''}
+            value={week}
             onChange={onSelectWeek}
           >
             {[...Array(league.current_week-league.start_week+1).keys()].map(i => (
@@ -199,7 +226,22 @@ function Weekly(props) {
 
           </Select>
         </Grid>
-        <Grid item xs={3}>
+
+        <Grid item xs={2}>
+          <InputLabel id="date-label">Date</InputLabel>
+          <Select
+            labelId="date-label"
+            id="date-selector"
+            value={searchParams.get('date') || ''}
+            onChange={onSelectDate}
+          >
+            {calculateDates(week).map(date => (
+              <MenuItem value={date} key={date}>{date}</MenuItem>
+            ))}
+
+          </Select>
+        </Grid>
+        <Grid item xs={2}>
           <InputLabel id="type-label">Type</InputLabel>
           <Select
             labelId="type-label"
@@ -267,31 +309,6 @@ function Weekly(props) {
                       </TableCell>
                     )}
                   </TableRow>
-                  <TableRow
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell align="right" component="th" scope="row">
-                      Win/Loss
-                    </TableCell>
-                    {teams.map(team => {
-                      if (searchParams.get('week') >= league.current_week) {
-                        return <TableCell align="right"> N/A </TableCell>
-                      }
-                      const tied_keys = []
-                      matchups.filter(matchup => matchup.is_tied)
-                        .forEach(matchup => {
-                          tied_keys.push(...matchup.teams.team.map(team => team.team_key))
-                        })
-                      const winner_keys = matchups.map(matchup => matchup.winner_team_key)
-                      if (tied_keys.includes(team.team_key)) {
-                        return <TableCell align="right"> T </TableCell>
-                      } else if (winner_keys.includes(team.team_key)) {
-                        return <TableCell align="right"> W </TableCell>
-                      } else {
-                        return <TableCell align="right"> L </TableCell>
-                      }
-                    })}
-                  </TableRow>
                 </TableBody>
               </Table>
             </TableContainer>
@@ -345,4 +362,4 @@ function Weekly(props) {
   )
 }
 
-export default Weekly;
+export default Daily;

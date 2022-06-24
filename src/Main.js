@@ -50,7 +50,7 @@ class Main extends Component {
             <Route path="/">
               <Route index element=<Navigate to="home" replace={true} />/>
               <Route path="home" element={this.state.fetching ? this.fetchingElement : <Home league={this.state.league}/>} />
-              <Route path="stats/*" element={this.state.fetching ? this.fetchingElement : <Stats league={this.state.league}/>} />
+              <Route path="stats/*" element={this.state.fetching ? this.fetchingElement : <Stats league={this.state.league} game={this.state.game}/>} />
               <Route path="total" element={this.state.fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
               <Route path="team" element={this.state.fetching ? this.fetchingElement : <Team league={this.state.league} game={this.state.game}/>} />
             </Route>

@@ -65,6 +65,19 @@ const apis = {
     }
   },
 
+  async getTeamsStatsByDate(teamNum, date) {
+    try {
+      let team_keys = [...Array(teamNum).keys()].map(i => `${LEAGUE_KEY}.t.${i+1}`);
+
+      const query = `${baseURL}/teams;team_keys=${team_keys.join(',')}/stats;type=date;date=${date}`;
+      const results = await makeAPIrequest(query);
+      return results.teams.team;
+    } catch (err) {
+      console.error(`Error in getTeamsStatsByDate(): ${err}`);
+      return err;
+    }
+  },
+
   async getTeamsStatsByWeek(teamNum, week) {
     try {
       let team_keys = [...Array(teamNum).keys()].map(i => `${LEAGUE_KEY}.t.${i+1}`);
@@ -74,6 +87,19 @@ const apis = {
       return results.teams.team;
     } catch (err) {
       console.error(`Error in getTeamsStatsByWeek(): ${err}`);
+      return err;
+    }
+  },
+
+  async getTeamsStatsBySeason(teamNum) {
+    try {
+      let team_keys = [...Array(teamNum).keys()].map(i => `${LEAGUE_KEY}.t.${i+1}`);
+
+      const query = `${baseURL}/teams;team_keys=${team_keys.join(',')}/stats;type=season`;
+      const results = await makeAPIrequest(query);
+      return results.teams.team;
+    } catch (err) {
+      console.error(`Error in getTeamsStatsBySeason(): ${err}`);
       return err;
     }
   },
