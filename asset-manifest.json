@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/fantasy-baseball/static/css/main.761753cc.css",
-    "main.js": "/fantasy-baseball/static/js/main.23807d1c.js",
+    "main.js": "/fantasy-baseball/static/js/main.117d6fc4.js",
     "static/js/787.9c474734.chunk.js": "/fantasy-baseball/static/js/787.9c474734.chunk.js",
     "index.html": "/fantasy-baseball/index.html",
     "main.761753cc.css.map": "/fantasy-baseball/static/css/main.761753cc.css.map",
-    "main.23807d1c.js.map": "/fantasy-baseball/static/js/main.23807d1c.js.map",
+    "main.117d6fc4.js.map": "/fantasy-baseball/static/js/main.117d6fc4.js.map",
     "787.9c474734.chunk.js.map": "/fantasy-baseball/static/js/787.9c474734.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.761753cc.css",
-    "static/js/main.23807d1c.js"
+    "static/js/main.117d6fc4.js"
   ]
 }
