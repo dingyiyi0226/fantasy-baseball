@@ -18,6 +18,7 @@ class TeamSeasonalStats extends Component {
     this.league = props.league;
     this.teams = props.league.teams.team;
     this.statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
+    this.gameWeeks = props.game.game_weeks.game_week;
 
     this.weeks = [...Array(props.league.current_week-props.league.start_week+1).keys()].map(i => i+props.league.start_week);
     this.state = {
@@ -95,6 +96,16 @@ class TeamSeasonalStats extends Component {
                     <TableCell width="10%" align="right">{week}</TableCell>
                   ))}
                   <TableCell>Total</TableCell>
+                </TableRow>
+                <TableRow>
+                  <TableCell></TableCell>
+                  {this.weeks.map(week => {
+                    const start = this.gameWeeks.find(w => w.week===week).start;
+                    return (
+                      <TableCell width="10%" align="right">{`${Number(start.split('-')[1])}/${Number(start.split('-')[2])}`}</TableCell>
+                    )
+                  })}
+                  <TableCell></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
