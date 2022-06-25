@@ -1,16 +1,16 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import { Route, Routes, Navigate } from "react-router-dom";
 
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 
-import Home from './Home.js'
+import Home from './Home.js';
 import Sidebar from './Sidebar.js';
-import Stats from './Stats'
-import Team from './TeamStats'
-import TotalStats from './TotalStats.js'
+import LeagueStats from './LeagueStats';
+import TeamStats from './TeamStats';
+import TotalStats from './TotalStats.js';
 
-import { apis } from './utils/apis.js'
+import { apis } from './utils/apis.js';
 
 
 class Main extends Component {
@@ -50,9 +50,9 @@ class Main extends Component {
             <Route path="/">
               <Route index element=<Navigate to="home" replace={true} />/>
               <Route path="home" element={this.state.fetching ? this.fetchingElement : <Home league={this.state.league}/>} />
-              <Route path="stats/*" element={this.state.fetching ? this.fetchingElement : <Stats league={this.state.league} game={this.state.game}/>} />
+              <Route path="league/*" element={this.state.fetching ? this.fetchingElement : <LeagueStats league={this.state.league} game={this.state.game}/>} />
               <Route path="total" element={this.state.fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
-              <Route path="team/*" element={this.state.fetching ? this.fetchingElement : <Team league={this.state.league} game={this.state.game}/>} />
+              <Route path="team/*" element={this.state.fetching ? this.fetchingElement : <TeamStats league={this.state.league} game={this.state.game}/>} />
             </Route>
           </Routes>
         </Box>

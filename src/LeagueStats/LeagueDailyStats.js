@@ -13,7 +13,7 @@ import Grid from '@mui/material/Grid';
 import { apis } from '../utils/apis.js';
 
 
-function Daily(props) {
+function LeagueDailyStats(props) {
 
   const [fetching, setFetching] = useState(true);
   const [type, setType] = useState('value');  // 'value'|'rank'
@@ -362,4 +362,4 @@ function Daily(props) {
   )
 }
 
-export default Daily;
+export default LeagueDailyStats;

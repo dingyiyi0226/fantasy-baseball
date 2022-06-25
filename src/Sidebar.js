@@ -53,19 +53,19 @@ function Sidebar(props) {
           <Collapse in={openStat} timeout="auto" unmountOnExit>
             <List disablePadding>
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="stats/daily" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to="league/daily" sx={{ pl: 4 }}>
                   <ListItemText primary="Daily Stats" />
                 </ListItemButton>
               </ListItem>
 
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="stats/weekly" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to="league/weekly" sx={{ pl: 4 }}>
                   <ListItemText primary="Weekly Stats" />
                 </ListItemButton>
               </ListItem>
 
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="stats/seasonal" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to="league/seasonal" sx={{ pl: 4 }}>
                   <ListItemText primary="Seasonal Stats" />
                 </ListItemButton>
               </ListItem>

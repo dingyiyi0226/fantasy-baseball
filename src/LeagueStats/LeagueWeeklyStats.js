@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+
 
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
@@ -11,13 +13,20 @@ import Grid from '@mui/material/Grid';
 import { apis } from '../utils/apis.js';
 
 
-function Seasonal(props) {
+function LeagueWeeklyStats(props) {
 
   const [fetching, setFetching] = useState(true);
   const [type, setType] = useState('value');  // 'value'|'rank'
   const [stats, setStats] = useState({});  // {<team_id>: [{stat_id:, value:, rank:}, ]}
   const [h2h, setH2H] = useState({});      // {<team_id>: {<opteam_id>: {win:, lose:, status: 'win'|'lose'|'tie' }}}
+  const [matchups, setMatchups] = useState([]);
+  const [matchupPair, setMatchupPair] = useState([]);
 
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const matchupColors = [
+    '#f9f8f1', '#F4FAE6', '#D9E5FA', '#F1D9FA', '#FAF2E1'
+  ]
   const color = {
     win: '#F1D9FA',
     lose: '#FAF2E1',
@@ -27,16 +36,22 @@ function Seasonal(props) {
   useEffect(() => {
     const teams = props.league.teams.team;
     const statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
+    const week = searchParams.get('week');
+    if (!week) {
+      setSearchParams({week: props.league.current_week});
+      return;
+    }
 
-    const fetchStats = async () => {
-      await getTeamsStatsBySeason();
+    const fetchStats = async (week) => {
+      await getTeamsStatsByWeek(week);
+      await getMatchupsByWeek(week);
       setFetching(false);
     }
 
-    const getTeamsStatsBySeason = async () => {
+    const getTeamsStatsByWeek = async (week) => {
 
       let teamsStats = {}
-      const teamsStatsRaw = await apis.getTeamsStatsBySeason(teams.length)
+      const teamsStatsRaw = await apis.getTeamsStatsByWeek(teams.length, week)
       teamsStatsRaw.forEach(team => {
         teamsStats[team.team_id] = team.team_stats.stats.stat.filter(s => s.stat_id !== 60 && s.stat_id !== 50);
       })
@@ -53,6 +68,18 @@ function Seasonal(props) {
       let h2h = calculateH2H(teamsStats);
       setStats(teamsStats);
       setH2H(h2h);
+    }
+
+    const getMatchupsByWeek = async (week) => {
+      let matchups = await apis.getMatchupsByWeek(week)
+      let matchupPair = {}
+      matchups.forEach((matchup, i) => {
+        matchup.teams.team.forEach(team => {
+          matchupPair[team.team_id] = i
+        })
+      })
+      setMatchupPair(matchupPair);
+      setMatchups(matchups);
     }
 
     const calulateRank = (teamsStats) => {
@@ -119,8 +146,8 @@ function Seasonal(props) {
       return h2h;
     }
 
-    fetchStats();
-  }, [props.league])
+    fetchStats(week);
+  }, [props.league, searchParams, setSearchParams])
 
 
   const TeamH2HSumStr = (teamH2H) => {
@@ -139,16 +166,39 @@ function Seasonal(props) {
     return `${win}-${lose}-${tie}`;
   }
 
+  const onSelectWeek = (e) => {
+    if (fetching) {
+      return;
+    }
+    setSearchParams({week: e.target.value});
+    setFetching(true);
+  }
+
   const onSelectType = (e) => {
     setType(e.target.value);
   }
 
+  const league = props.league;
   const teams = props.league.teams.team;
   const statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
 
   return (
     <Container>
       <Grid container spacing={2}>
+        <Grid item xs={3}>
+          <InputLabel id="week-label">Week</InputLabel>
+          <Select
+            labelId="week-label"
+            id="week-selector"
+            value={searchParams.get('week') || ''}
+            onChange={onSelectWeek}
+          >
+            {[...Array(league.current_week-league.start_week+1).keys()].map(i => (
+              <MenuItem value={i+league.start_week} key={i+league.start_week}>{i+league.start_week}</MenuItem>
+            ))}
+
+          </Select>
+        </Grid>
         <Grid item xs={3}>
           <InputLabel id="type-label">Type</InputLabel>
           <Select
@@ -162,7 +212,7 @@ function Seasonal(props) {
 
           </Select>
         </Grid>
-        <Grid item xs={9}>
+        <Grid item xs={6}>
         </Grid>
 
       </Grid>
@@ -176,7 +226,7 @@ function Seasonal(props) {
                   <TableRow>
                     <TableCell> </TableCell>
                     {teams.map((team) => (
-                      <TableCell width="9%" align="right">
+                      <TableCell width="9%" align="right" style={{backgroundColor: matchupColors[matchupPair[team.team_id]]}}>
                         {team.name}
                       </TableCell>
                     ))}
@@ -216,6 +266,31 @@ function Seasonal(props) {
                           .reduce((pv, v) => pv+v.rank, 0) / 14).toFixed(2)}
                       </TableCell>
                     )}
+                  </TableRow>
+                  <TableRow
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell align="right" component="th" scope="row">
+                      Win/Loss
+                    </TableCell>
+                    {teams.map(team => {
+                      if (searchParams.get('week') >= league.current_week) {
+                        return <TableCell align="right"> N/A </TableCell>
+                      }
+                      const tied_keys = []
+                      matchups.filter(matchup => matchup.is_tied)
+                        .forEach(matchup => {
+                          tied_keys.push(...matchup.teams.team.map(team => team.team_key))
+                        })
+                      const winner_keys = matchups.map(matchup => matchup.winner_team_key)
+                      if (tied_keys.includes(team.team_key)) {
+                        return <TableCell align="right"> T </TableCell>
+                      } else if (winner_keys.includes(team.team_key)) {
+                        return <TableCell align="right"> W </TableCell>
+                      } else {
+                        return <TableCell align="right"> L </TableCell>
+                      }
+                    })}
                   </TableRow>
                 </TableBody>
               </Table>
@@ -270,4 +345,4 @@ function Seasonal(props) {
   )
 }
 
-export default Seasonal;
+export default LeagueWeeklyStats;
