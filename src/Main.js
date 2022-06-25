@@ -7,7 +7,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Home from './Home.js'
 import Sidebar from './Sidebar.js';
 import Stats from './Stats'
-import Team from './Team.js'
+import Team from './TeamStats'
 import TotalStats from './TotalStats.js'
 
 import { apis } from './utils/apis.js'
@@ -52,7 +52,7 @@ class Main extends Component {
               <Route path="home" element={this.state.fetching ? this.fetchingElement : <Home league={this.state.league}/>} />
               <Route path="stats/*" element={this.state.fetching ? this.fetchingElement : <Stats league={this.state.league} game={this.state.game}/>} />
               <Route path="total" element={this.state.fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
-              <Route path="team" element={this.state.fetching ? this.fetchingElement : <Team league={this.state.league} game={this.state.game}/>} />
+              <Route path="team/*" element={this.state.fetching ? this.fetchingElement : <Team league={this.state.league} game={this.state.game}/>} />
             </Route>
           </Routes>
         </Box>

@@ -104,6 +104,28 @@ const apis = {
     }
   },
 
+  async getTeamStatsByWeek(team, week) {
+    try {
+      const query = `${baseURL}/team/${`${LEAGUE_KEY}.t.${team}`}/stats;type=week;week=${week}`;
+      const results = await makeAPIrequest(query);
+      return results.team.team_stats.stats.stat;
+    } catch (err) {
+      console.error(`Error in getTeamStatsByWeek(): ${err}`);
+      return err;
+    }
+  },
+
+  async getTeamStatsBySeason(team) {
+    try {
+      const query = `${baseURL}/team/${`${LEAGUE_KEY}.t.${team}`}/stats;type=season`;
+      const results = await makeAPIrequest(query);
+      return results.team.team_stats.stats.stat;
+    } catch (err) {
+      console.error(`Error in getTeamStatsBySeason(): ${err}`);
+      return err;
+    }
+  },
+
   async getMatchupsByWeek(week) {
     try {
       const query = `${baseURL}/league/${LEAGUE_KEY}/scoreboard;week=${week}`

@@ -15,9 +15,14 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 
 function Sidebar(props) {
   const [openStat, setOpenStat] = useState(false);
+  const [openTeam, setOpenTeam] = useState(false);
 
   const onClickStat = () => {
     setOpenStat(!openStat);
+  }
+
+  const onClickTeam = () => {
+    setOpenTeam(!openTeam);
   }
 
   return (
@@ -74,10 +79,27 @@ function Sidebar(props) {
           </ListItem>
 
           <ListItem disablePadding>
-            <ListItemButton component={Link} to="team">
-              <ListItemText primary="Team Weekly Stats" />
+            <ListItemButton onClick={onClickTeam}>
+              <ListItemText primary="Team Stats" />
+              {openTeam ? <ExpandLess /> : <ExpandMore />}
             </ListItemButton>
           </ListItem>
+
+          <Collapse in={openTeam} timeout="auto" unmountOnExit>
+            <List disablePadding>
+              <ListItem disablePadding>
+                <ListItemButton component={Link} to="team/weekly" sx={{ pl: 4 }}>
+                  <ListItemText primary="Weekly Stats" />
+                </ListItemButton>
+              </ListItem>
+
+              <ListItem disablePadding>
+                <ListItemButton component={Link} to="team/seasonal" sx={{ pl: 4 }}>
+                  <ListItemText primary="Seasonal Stats" />
+                </ListItemButton>
+              </ListItem>
+            </List>
+          </Collapse>
 
         </List>
       </Box>

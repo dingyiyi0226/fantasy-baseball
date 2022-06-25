@@ -11,11 +11,11 @@ import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 
-import { apis } from './utils/apis.js';
-import composite_stats from './utils/composite_stats.js';
+import { apis } from '../utils/apis.js';
+import composite_stats from '../utils/composite_stats.js';
 
 
-class Team extends Component {
+class TeamWeeklyStats extends Component {
   constructor(props) {
     super(props)
 
@@ -287,4 +287,4 @@ class Team extends Component {
   }
 }
 
-export default Team;
+export default TeamWeeklyStats;
