@@ -44,12 +44,14 @@ class TeamSeasonalStats extends Component {
   getTeamStats = async (team=null) => {
     let stats = {};
 
-    await Promise.all(this.weeks.map(async (week) => {
-      const stat = await apis.getTeamStatsByWeek(team || this.state.team, week);
-      stats[week] = stat;
-    }))
+    const fetchWeeklyStats = async () => {
+      await Promise.all(this.weeks.map(async (week) => {
+        const stat = await apis.getTeamStatsByWeek(team || this.state.team, week);
+        stats[week] = stat;
+      }))
+    }
 
-    const seasonalStats = await apis.getTeamStatsBySeason(team || this.state.team);
+    const [seasonalStats] = await Promise.all([apis.getTeamStatsBySeason(team || this.state.team), fetchWeeklyStats()])
 
     this.setState({
       stats: stats,

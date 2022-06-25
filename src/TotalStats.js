@@ -39,10 +39,14 @@ class TotalStats extends Component {
         allStats[key][s.stat_id] = {'win': 0, 'lose': 0, 'tie': 0};
       })
     })
+    let allMatchups = {};
+    await Promise.all(this.teams.map(async (team) => {
+      const matchup = await apis.getTeamMatchupsUntilWeek(team.team_id, this.league.current_week-1);
+      allMatchups[team.team_id] = matchup;
+    }))
 
-    const allMatchups = await apis.getMatchupsUntilWeek(this.teams.length, this.league.current_week-1)
-    allMatchups.forEach(team => {
-      team.matchups.matchup.forEach(week => {
+    this.teams.forEach(team => {
+      allMatchups[team.team_id].forEach(week => {
         week.stat_winners.stat_winner.forEach(stat_winner => {
           if (stat_winner.is_tied) {
             allStats[team.team_id][stat_winner.stat_id].tie += 1;
@@ -54,6 +58,7 @@ class TotalStats extends Component {
         })
       })
     })
+
     const calVal = this.calStats(this.state.statTypes, allStats);
 
     this.setState({

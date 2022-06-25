@@ -137,16 +137,13 @@ const apis = {
     }
   },
 
-  async getMatchupsUntilWeek(teamNum, week) {
-
-    let team_keys = [...Array(teamNum).keys()].map(i => `${LEAGUE_KEY}.t.${i+1}`);
+  async getTeamMatchupsUntilWeek(team, week) {
     let week_keys = [...Array(week).keys()].map(i => i+1);
 
-    const query = `${baseURL}/teams;team_keys=${team_keys.join(',')}/matchups;weeks=${week_keys.join(',')}`;
-
+    const query = `${baseURL}/team/${`${LEAGUE_KEY}.t.${team}`}/matchups;weeks=${week_keys.join(',')}`;
     try {
       const results = await makeAPIrequest(query);
-      return results.teams.team
+      return results.team.matchups.matchup;
     } catch (err) {
       console.error(`Error in getMatchupsUntilWeek(): ${err}`);
       return err;

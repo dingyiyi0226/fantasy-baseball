@@ -43,8 +43,7 @@ function LeagueWeeklyStats(props) {
     }
 
     const fetchStats = async (week) => {
-      await getTeamsStatsByWeek(week);
-      await getMatchupsByWeek(week);
+      await Promise.all([getTeamsStatsByWeek(week), getMatchupsByWeek(week)]);
       setFetching(false);
     }
 
