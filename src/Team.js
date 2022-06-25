@@ -23,7 +23,7 @@ class Team extends Component {
     this.teams = props.league.teams.team;
     this.statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
     this.gameWeeks = props.game.game_weeks.game_week;
-    this.allStatCate = [];
+    this.allStatCate = props.game.stat_categories.stats.stat;
     this.dates = [];
 
     this.state = {
@@ -179,8 +179,6 @@ class Team extends Component {
     let stats = {};
     let rosters = {};
     let total = {};
-
-    this.allStatCate = await apis.getAllStats();
 
     await Promise.all(this.dates.map(async (date) => {
       const roster = await apis.getTeamRosterByDate(team || this.state.team, date);

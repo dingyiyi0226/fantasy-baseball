@@ -44,7 +44,7 @@ const apis = {
 
     try {
       // Get game info: game_key, game_weeks
-      let query = `${baseURL}/game/mlb;out=game_weeks`;
+      let query = `${baseURL}/game/mlb;out=game_weeks,stat_categories`;
       let results = await makeAPIrequest(query);
       metaData.game = results.game;
 
@@ -100,21 +100,6 @@ const apis = {
       return results.teams.team;
     } catch (err) {
       console.error(`Error in getTeamsStatsBySeason(): ${err}`);
-      return err;
-    }
-  },
-
-  async getTeamStatsUntilWeek(team, week) {
-
-    let week_keys = [...Array(week).keys()].map(i => i+1);
-
-    const query = `${baseURL}/team/${LEAGUE_KEY}.t.${team}/matchups;weeks=${week_keys.join(',')}`;
-
-    try {
-      const results = await makeAPIrequest(query);
-      return results.teams.team
-    } catch (err) {
-      console.error(`Error in getMatchupsUntilWeek(): ${err}`);
       return err;
     }
   },
@@ -185,17 +170,6 @@ const apis = {
       return err;
     }
   },
-
-  async getAllStats() {
-    const query = `${baseURL}/game/mlb/stat_categories`;
-    try {
-      const results = await makeAPIrequest(query);
-      return results.game.stat_categories.stats.stat;
-    } catch (err) {
-      console.error(`Error in getPlayerStatsByDate(): ${err}`);
-      return err;
-    }
-  }
 
 }
 
