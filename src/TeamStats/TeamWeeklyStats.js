@@ -7,12 +7,13 @@ import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
-import FormGroup from '@mui/material/FormGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 
 import { apis } from '../utils/apis.js';
-import composite_stats from '../utils/composite_stats.js';
+import { composite_stats, composite_stats_formula } from '../utils/composite_stats.js';
 
 
 class TeamWeeklyStats extends Component {
@@ -31,9 +32,11 @@ class TeamWeeklyStats extends Component {
       team: 1,
       week: props.league.current_week,
       types: ['Roster'], // 'Roster', 'BN', 'IL', 'NA'
-      stats: {},
-      rosters: {},
-      total: {},
+      compositeStatFormat: 'value', // 'value', 'raw'
+      stats: {},    // {[date]: [player_stats,]}
+      rosters: {},  // {[date]: [player,]}
+      total: {},    // {[date]: {[stat_id]: value}}
+      weeklyStats: {}, // {[stat_id]: value}
     }
 
     this.calculateDates();
@@ -73,16 +76,9 @@ class TeamWeeklyStats extends Component {
     this.getTeamStats();
   }
 
-  onChangeType = (e) => {
+  onChangeType = (e, types) => {
     let total = {};
     this.setState(state => {
-      let types = state.types;
-      if (!e.target.checked && types.includes(e.target.value)) {
-        types = types.filter(type => type !== e.target.value)
-      }
-      else if (e.target.checked && !types.includes(e.target.value)){
-        types.push(e.target.value);
-      }
       for(let date of this.dates) {
         total[date] = this.calculateDailyStats(date, undefined, undefined, types);
       }
@@ -92,6 +88,28 @@ class TeamWeeklyStats extends Component {
         total: total,
         weeklyStats: weeklyStats,
       };
+    })
+  }
+
+  onChangeCompositeStatsFormat = (e) => {
+    this.setState(state => {
+      Object.keys(state.total).forEach(date => {
+        this.changeComposite(state.total[date], e.target.value === 'raw');
+      })
+      this.changeComposite(state.weeklyStats, e.target.value === 'raw');
+
+      return {
+        compositeStatFormat: e.target.value,
+        total: state.total,
+        weeklyStats: state.weeklyStats,
+      }
+    })
+  }
+
+  changeComposite = (stats, toStr) => {
+    this.statCate.filter(stat => this.allStatCate.find(s => s.stat_id === stat.stat_id).is_composite_stat)
+      .forEach(stat => {
+        stats[stat.stat_id] = composite_stats(stats, stat.stat_id, toStr);
     })
   }
 
@@ -206,8 +224,8 @@ class TeamWeeklyStats extends Component {
   render() {
     return (
       <Container>
-        <Grid container spacing={2}>
-          <Grid item xs={3}>
+        <Grid container spacing={2} justifyContent="flex-start" alignItems="flex-end">
+          <Grid item xs={2}>
             <InputLabel id="team-label">Team</InputLabel>
             <Select
               labelId="team-label"
@@ -221,7 +239,7 @@ class TeamWeeklyStats extends Component {
 
             </Select>
           </Grid>
-          <Grid item xs={3}>
+          <Grid item xs={2}>
             <InputLabel id="week-label">Week</InputLabel>
             <Select
               labelId="week-label"
@@ -235,21 +253,34 @@ class TeamWeeklyStats extends Component {
 
             </Select>
           </Grid>
-          <Grid item xs={5}>
-            <FormGroup row>
-              <FormControlLabel control={<Checkbox defaultChecked onChange={this.onChangeType} value="Roster"/>} label="Roster" />
-              <FormControlLabel control={<Checkbox onChange={this.onChangeType} value="BN"/>} label="BN" />
-              <FormControlLabel control={<Checkbox onChange={this.onChangeType} value="IL"/>} label="IL" />
-              <FormControlLabel control={<Checkbox onChange={this.onChangeType} value="NA"/>} label="NA" />
-            </FormGroup>
+          <Grid item xs={4}>
+            <ToggleButtonGroup
+              value={this.state.types}
+              onChange={this.onChangeType}
+              aria-label="type-selector"
+            >
+              <ToggleButton value="Roster" aria-label="Roster">Roster</ToggleButton>
+              <ToggleButton value="BN" aria-label="BN">BN</ToggleButton>
+              <ToggleButton value="IL" aria-label="IL">IL</ToggleButton>
+              <ToggleButton value="NA" aria-label="NA">NA</ToggleButton>
+            </ToggleButtonGroup>
           </Grid>
-          <Grid item xs={1}>
+          <Grid item xs={4}>
+            <ToggleButtonGroup
+              value={this.state.compositeStatFormat}
+              exclusive
+              onChange={this.onChangeCompositeStatsFormat}
+              aria-label="composite-stats-format"
+            >
+              <ToggleButton value="value" aria-label="value">Value</ToggleButton>
+              <ToggleButton value="raw" aria-label="raw">Raw</ToggleButton>
+            </ToggleButtonGroup>
           </Grid>
         </Grid>
 
         {this.state.fetching ?
           <h3 className="fetching-text">Fetching</h3> :
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} sx={{ my: 2 }}>
             <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
               <TableHead>
                 <TableRow>
@@ -266,15 +297,25 @@ class TeamWeeklyStats extends Component {
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
                     <TableCell align="right" component="th" scope="row">
-                      {stat.display_name}
+                      {this.state.compositeStatFormat === "raw" && this.allStatCate.find(s => s.stat_id === stat.stat_id).is_composite_stat ? (
+                        <Tooltip title={composite_stats_formula(stat.stat_id)}>
+                          <Typography variant="span">{stat.display_name}</Typography>
+                        </Tooltip>
+                      ) : stat.display_name}
                     </TableCell>
                     {this.dates.map(date => (
                       <TableCell align="right">
-                        {Math.round(this.state.total[date][stat.stat_id]*100)/100}
+                        {isNaN(this.state.total[date][stat.stat_id]) ?
+                          this.state.total[date][stat.stat_id] || 'NaN' :
+                          Math.round(this.state.total[date][stat.stat_id]*100)/100
+                        }
                       </TableCell>
                     ))}
                     <TableCell>
-                      {Math.round(this.state.weeklyStats[stat.stat_id]*100)/100}
+                      {isNaN(this.state.weeklyStats[stat.stat_id]) ?
+                        this.state.weeklyStats[stat.stat_id] || 'NaN':
+                        Math.round(this.state.weeklyStats[stat.stat_id]*100)/100
+                      }
                     </TableCell>
                   </TableRow>
                 ))}
