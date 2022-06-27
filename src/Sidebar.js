@@ -98,6 +98,12 @@ function Sidebar(props) {
                   <ListItemText primary="Seasonal Stats" />
                 </ListItemButton>
               </ListItem>
+
+              <ListItem disablePadding>
+                <ListItemButton component={Link} to="team/matchups" sx={{ pl: 4 }}>
+                  <ListItemText primary="Matchups" />
+                </ListItemButton>
+              </ListItem>
             </List>
           </Collapse>
 

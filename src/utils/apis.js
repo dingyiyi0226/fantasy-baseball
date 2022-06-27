@@ -137,10 +137,15 @@ const apis = {
     }
   },
 
-  async getTeamMatchupsUntilWeek(team, week) {
-    let week_keys = [...Array(week).keys()].map(i => i+1);
-
-    const query = `${baseURL}/team/${`${LEAGUE_KEY}.t.${team}`}/matchups;weeks=${week_keys.join(',')}`;
+  async getTeamMatchupsUntilWeek(team, week=null) {
+    let query;
+    if (week === null) {  // get all weeks
+      query = `${baseURL}/team/${`${LEAGUE_KEY}.t.${team}`}/matchups`;
+    }
+    else {
+      let week_keys = [...Array(week).keys()].map(i => i+1);
+      query = `${baseURL}/team/${`${LEAGUE_KEY}.t.${team}`}/matchups;weeks=${week_keys.join(',')}`;
+    }
     try {
       const results = await makeAPIrequest(query);
       return results.team.matchups.matchup;
