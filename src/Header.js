@@ -5,6 +5,9 @@ import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
+import IconButton from '@mui/material/IconButton';
+import GitHubIcon from '@mui/icons-material/GitHub';
 
 import AuthContext from './AuthContext.js';
 
@@ -29,6 +32,17 @@ export default function Header() {
           Fantasy Baseball
         </Typography>
         <Button color="inherit" value={isLogin ? "logout" : "login"} onClick={onLogin}>{isLogin ? "Logout" : "Login"}</Button>
+        <IconButton
+          size="large"
+          aria-label="github repository"
+          color="inherit"
+          component={Link}
+          href="https://github.com/dingyiyi0226/fantasy-baseball"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <GitHubIcon />
+        </IconButton>
       </Toolbar>
     </AppBar>
   );
