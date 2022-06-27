@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
-import Select from '@mui/material/Select';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import { apis } from '../utils/apis.js';
 
@@ -148,23 +147,18 @@ function LeagueSeasonalStats(props) {
 
   return (
     <Container>
-      <Grid container spacing={2}>
-        <Grid item xs={3}>
-          <InputLabel id="type-label">Type</InputLabel>
-          <Select
-            labelId="type-label"
-            id="type-selector"
+      <Grid container spacing={2} justifyContent="flex-start" alignItems="flex-end">
+        <Grid item xs={2}>
+          <ToggleButtonGroup
             value={type}
+            exclusive
             onChange={onSelectType}
+            aria-label="type-selector"
           >
-            <MenuItem value="value">Value</MenuItem>
-            <MenuItem value="rank">Rank</MenuItem>
-
-          </Select>
+            <ToggleButton value="value" aria-label="value">Value</ToggleButton>
+            <ToggleButton value="rank" aria-label="rank">Rank</ToggleButton>
+          </ToggleButtonGroup>
         </Grid>
-        <Grid item xs={9}>
-        </Grid>
-
       </Grid>
 
       {fetching ?

@@ -9,6 +9,8 @@ import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import { apis } from '../utils/apis.js';
 
@@ -215,7 +217,7 @@ function LeagueDailyStats(props) {
 
   return (
     <Container>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} justifyContent="flex-start" alignItems="flex-end">
         <Grid item xs={2}>
           <InputLabel id="week-label">Week</InputLabel>
           <Select
@@ -246,21 +248,16 @@ function LeagueDailyStats(props) {
           </Select>
         </Grid>
         <Grid item xs={2}>
-          <InputLabel id="type-label">Type</InputLabel>
-          <Select
-            labelId="type-label"
-            id="type-selector"
+          <ToggleButtonGroup
             value={type}
+            exclusive
             onChange={onSelectType}
+            aria-label="type-selector"
           >
-            <MenuItem value="value">Value</MenuItem>
-            <MenuItem value="rank">Rank</MenuItem>
-
-          </Select>
+            <ToggleButton value="value" aria-label="value">Value</ToggleButton>
+            <ToggleButton value="rank" aria-label="rank">Rank</ToggleButton>
+          </ToggleButtonGroup>
         </Grid>
-        <Grid item xs={6}>
-        </Grid>
-
       </Grid>
 
       {fetching ?
