@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 
@@ -35,13 +35,31 @@ function LeagueDailyStats(props) {
     tie: '#f9f8f1'
   }
 
+  const dates = useMemo(() => {
+    const dates = []
+    const gameWeek = props.game.game_weeks.game_week.find(w => w.week === week);
+
+    const start = new Date(gameWeek.start.split('-')[0], gameWeek.start.split('-')[1]-1, gameWeek.start.split('-')[2]);
+    const end = new Date(gameWeek.end.split('-')[0], gameWeek.end.split('-')[1]-1, gameWeek.end.split('-')[2]);
+    for (let d = start; d <= end; d.setDate(d.getDate()+1)) {
+      dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+    }
+    return dates;
+  }, [week, props.game]);
+
   useEffect(() => {
     const teams = props.league.teams.team;
     const statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
-    const date = searchParams.get('date');
+    let date = searchParams.get('date');
     if (!date) {
       const today = new Date();
       setSearchParams({date: `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`});
+      return;
+    }
+
+    if (!dates.includes(date)){
+      date = dates[0];
+      setSearchParams({date: date});
       return;
     }
 
@@ -137,12 +155,11 @@ function LeagueDailyStats(props) {
     }
 
     fetchStats(date);
-  }, [props.league, searchParams, setSearchParams])
+  }, [props.league, searchParams, setSearchParams, dates])
 
   useEffect(() => {
     const fetchStats = async (week) => {
       await getMatchupsByWeek(week);
-      setFetching(false);
     }
 
     const getMatchupsByWeek = async (week) => {
@@ -192,19 +209,6 @@ function LeagueDailyStats(props) {
     setType(e.target.value);
   }
 
-
-  const calculateDates = (week) => {
-    const dates = []
-    const gameWeek = props.game.game_weeks.game_week.find(w => w.week === week);
-
-    const start = new Date(gameWeek.start.split('-')[0], gameWeek.start.split('-')[1]-1, gameWeek.start.split('-')[2]);
-    const end = new Date(gameWeek.end.split('-')[0], gameWeek.end.split('-')[1]-1, gameWeek.end.split('-')[2]);
-    for (let d = start; d <= end; d.setDate(d.getDate()+1)) {
-      dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
-    }
-    return dates;
-  }
-
   const league = props.league;
   const teams = props.league.teams.team;
   const statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
@@ -235,7 +239,7 @@ function LeagueDailyStats(props) {
             value={searchParams.get('date') || ''}
             onChange={onSelectDate}
           >
-            {calculateDates(week).map(date => (
+            {dates.map(date => (
               <MenuItem value={date} key={date}>{date}</MenuItem>
             ))}
 
@@ -304,8 +308,10 @@ function LeagueDailyStats(props) {
                     </TableCell>
                     {teams.map(team =>
                       <TableCell align="right">
-                        {(Object.values(stats[team.team_id])
-                          .reduce((pv, v) => pv+v.rank, 0) / 14).toFixed(2)}
+                        {stats[team.team_id] ?
+                          (Object.values(stats[team.team_id]).reduce((pv, v) => pv+v.rank, 0) / 14).toFixed(2) :
+                          null
+                        }
                       </TableCell>
                     )}
                   </TableRow>
