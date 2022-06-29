@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
 import Container from '@mui/material/Container';
-import Select from '@mui/material/Select';
-import Grid from '@mui/material/Grid';
+import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import Paper from '@mui/material/Paper';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import Select from '@mui/material/Select';
+import Stack from '@mui/material/Stack';
 
 import { apis } from '../utils/apis.js';
 
@@ -78,8 +79,8 @@ function TeamMatchups(props) {
 
   return (
     <Container>
-      <Grid container spacing={2} justifyContent="flex-start" alignItems="flex-end">
-        <Grid item xs={3}>
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
+        <FormControl variant="filled" sx={{ minWidth: 160 }}>
           <InputLabel id="team-label">Team</InputLabel>
           <Select
             labelId="team-label"
@@ -90,10 +91,9 @@ function TeamMatchups(props) {
             {teams.map(t => (
               <MenuItem value={t.team_id} key={t.team_id}>{t.name}</MenuItem>
             ))}
-
           </Select>
-        </Grid>
-      </Grid>
+        </FormControl>
+      </Stack>
 
       {fetching ?
         <h3 className="fetching-text">Fetching</h3> :

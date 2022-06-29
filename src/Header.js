@@ -26,7 +26,7 @@ export default function Header() {
   }
 
   return (
-    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+    <AppBar position="fixed" elevation={3} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Toolbar variant="dense">
         <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1 }}>
           Fantasy Baseball

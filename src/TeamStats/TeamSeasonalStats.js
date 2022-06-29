@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import Container from '@mui/material/Container';
+import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import Select from '@mui/material/Select';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
 
 import { apis } from '../utils/apis.js';
 
@@ -67,8 +68,8 @@ class TeamSeasonalStats extends Component {
   render() {
     return (
       <Container>
-        <Grid container spacing={2}>
-          <Grid item xs={3}>
+        <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
+          <FormControl variant="filled" sx={{ minWidth: 160 }}>
             <InputLabel id="team-label">Team</InputLabel>
             <Select
               labelId="team-label"
@@ -79,17 +80,13 @@ class TeamSeasonalStats extends Component {
               {this.teams.map(team => (
                 <MenuItem value={team.team_id} key={team.team_id}>{team.name}</MenuItem>
               ))}
-
             </Select>
-          </Grid>
-          
-          <Grid item xs={9}>
-          </Grid>
-        </Grid>
+          </FormControl>
+        </Stack>
 
         {this.state.fetching ?
           <h3 className="fetching-text">Fetching</h3> :
-          <TableContainer component={Paper}>
+          <TableContainer component={Paper} sx={{ my: 2 }}>
             <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
               <TableHead>
                 <TableRow>

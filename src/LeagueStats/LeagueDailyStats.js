@@ -1,16 +1,18 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import Chip from '@mui/material/Chip';
+import Container from '@mui/material/Container';
+import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import CircleIcon from '@mui/icons-material/Circle';
 
 import { apis } from '../utils/apis.js';
 
@@ -27,15 +29,6 @@ function LeagueDailyStats(props) {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const matchupColors = [
-    '#f9f8f1', '#F4FAE6', '#D9E5FA', '#F1D9FA', '#FAF2E1'
-  ]
-
-  const color = {
-    win: '#F1D9FA',
-    lose: '#FAF2E1',
-    tie: '#f9f8f1'
-  }
 
   const dates = useMemo(() => {
     const dates = []
@@ -217,8 +210,8 @@ function LeagueDailyStats(props) {
 
   return (
     <Container>
-      <Grid container spacing={2} justifyContent="flex-start" alignItems="flex-end">
-        <Grid item xs={2}>
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
+        <FormControl variant="filled" sx={{ minWidth: 80 }}>
           <InputLabel id="week-label">Week</InputLabel>
           <Select
             labelId="week-label"
@@ -231,9 +224,8 @@ function LeagueDailyStats(props) {
             ))}
 
           </Select>
-        </Grid>
-
-        <Grid item xs={2}>
+        </FormControl>
+        <FormControl variant="filled" sx={{ minWidth: 80 }}>
           <InputLabel id="date-label">Date</InputLabel>
           <Select
             labelId="date-label"
@@ -244,21 +236,19 @@ function LeagueDailyStats(props) {
             {dates.map(date => (
               <MenuItem value={date} key={date}>{date}</MenuItem>
             ))}
-
           </Select>
-        </Grid>
-        <Grid item xs={2}>
-          <ToggleButtonGroup
-            value={type}
-            exclusive
-            onChange={onSelectType}
-            aria-label="type-selector"
-          >
-            <ToggleButton value="value" aria-label="value">Value</ToggleButton>
-            <ToggleButton value="rank" aria-label="rank">Rank</ToggleButton>
-          </ToggleButtonGroup>
-        </Grid>
-      </Grid>
+        </FormControl>
+        <ToggleButtonGroup
+          value={type}
+          exclusive
+          onChange={onSelectType}
+          aria-label="type-selector"
+        >
+          <ToggleButton value="value" aria-label="value">Value</ToggleButton>
+          <ToggleButton value="rank" aria-label="rank">Rank</ToggleButton>
+        </ToggleButtonGroup>
+
+      </Stack>
 
       {fetching ?
         <h3 className="fetching-text">Fetching</h3> : (
@@ -269,7 +259,7 @@ function LeagueDailyStats(props) {
                   <TableRow>
                     <TableCell> </TableCell>
                     {teams.map((team) => (
-                      <TableCell width="9%" align="right" style={{backgroundColor: matchupColors[matchupPair[team.team_id]]}}>
+                      <TableCell width="9%" align="right" sx={{ bgcolor: `matchup.${matchupPair[team.team_id]}` }}>
                         {team.name}
                       </TableCell>
                     ))}
@@ -316,6 +306,12 @@ function LeagueDailyStats(props) {
               </Table>
             </TableContainer>
 
+            <Stack direction="row" spacing={1} sx={{ mt: 4 }}>
+              <Chip icon={<CircleIcon sx={{ "&&": { color: "status.win" }}}/>} label="Win" variant="outlined" size="small"/>
+              <Chip icon={<CircleIcon sx={{ "&&": { color: "status.lose" }}}/>} label="Lose" variant="outlined" size="small"/>
+              <Chip icon={<CircleIcon sx={{ "&&": { color: "status.tie" }}}/>} label="Tie" variant="outlined" size="small"/>
+            </Stack>
+
             <TableContainer component={Paper} sx={{ my: 2 }}>
               <Table sx={{ minWidth: 650 }} size="small" aria-label="h2h table">
                 <TableHead>
@@ -342,7 +338,12 @@ function LeagueDailyStats(props) {
                         }
                         else {
                           let result = h2h[team.team_id][teamRow.team_id];
-                          return <TableCell align="right" style={{backgroundColor: color[result.status]}}>{`${result.lose}-${result.win}`}</TableCell>;
+                          let colorType; // reverse win/lose color
+                          if (result.status === 'win') {colorType = 'lose';}
+                          else if (result.status === 'lose') {colorType = 'win';}
+                          else {colorType = result.status;}
+
+                          return <TableCell align="right" sx={{bgcolor: `status.${colorType}`}}>{`${result.lose}-${result.win}`}</TableCell>;
                         }
                       })}
                     </TableRow>

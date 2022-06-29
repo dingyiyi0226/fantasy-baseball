@@ -1,9 +1,9 @@
 import React, { Component } from 'react'
 
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import Paper from '@mui/material/Paper';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
@@ -121,18 +121,16 @@ class TotalStats extends Component {
   render() {
     return (
       <Container>
-        <Grid container spacing={2} justifyContent="flex-start" alignItems="flex-end">
-          <Grid item xs={3}>
-            <ToggleButtonGroup
-              value={this.state.statTypes}
-              onChange={this.onChangeType}
-              aria-label="type-selector"
-            >
-              <ToggleButton value="B" aria-label="Batting">Batting</ToggleButton>
-              <ToggleButton value="P" aria-label="Pitching">Pitching</ToggleButton>
-            </ToggleButtonGroup>
-          </Grid>
-        </Grid>
+        <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
+          <ToggleButtonGroup
+            value={this.state.statTypes}
+            onChange={this.onChangeType}
+            aria-label="type-selector"
+          >
+            <ToggleButton value="B" aria-label="Batting">Batting</ToggleButton>
+            <ToggleButton value="P" aria-label="Pitching">Pitching</ToggleButton>
+          </ToggleButtonGroup>
+        </Stack>
 
         {this.state.fetching ?
           <h3 className="fetching-text">Fetching</h3> :

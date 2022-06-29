@@ -31,7 +31,7 @@ function Sidebar(props) {
       sx={{
         width: 200,
         flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: 200, boxSizing: 'border-box' },
+        [`& .MuiDrawer-paper`]: { width: 200, boxSizing: 'border-box', bgcolor: 'background.default' },
       }}
     >
       <Toolbar variant="dense"/>

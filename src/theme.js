@@ -1,25 +1,32 @@
 import { createTheme } from '@mui/material/styles';
 
-// A custom theme for this app
 const theme = createTheme({
   palette: {
     type: 'light',
     primary: {
-      main: '#5286BA',
+      main: '#dbcabb',
+      contrastText: '#181818',
+      dark: '#a9998b',
+      light: '#fffded',
     },
     secondary: {
-      main: '#D93E2B',
-    },
-    success: {
-      main: '#789349',
-    },
-    info: {
-      main: '#36b6bf',
+      main: '#d14945',
+      contrastText: '#e8e8e8',
+      light: '#ff7a70',
+      dark: '#9a0f1d',
     },
     background: {
-      default: '#f9f8f1',
-      paper: '#F9F8F1',
+      default: '#fff8f2',
+      paper: '#ffffff',
     },
+    status: {
+      win: '#dbbbbc',
+      lose: '#dbdabb',
+      tie: '#dbcabb',
+    },
+    matchup: [
+      '#ecf3fb', '#d3e1ec', '#bbccdb', '#f4eadd', '#dbcabb', '#bda795'
+    ]
   },
   typography: {
     fontFamily: 'Lora'

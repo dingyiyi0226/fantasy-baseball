@@ -1,6 +1,7 @@
 import React, {  useContext, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Toolbar from '@mui/material/Toolbar';
 
@@ -15,7 +16,7 @@ function Login(props) {
     <Container>
       <Toolbar/>
       <a href={oauth_link}>
-        <img src={process.env.PUBLIC_URL+'/yahoo_login.png'} alt="yahoo-login" width="300"/>
+        <Box component="img" sx={{ width: 250 }} alt="yahoo-login" src={process.env.PUBLIC_URL+'/yahoo_login.png'}/>
       </a>
     </Container>
   )

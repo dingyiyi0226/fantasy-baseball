@@ -1,12 +1,13 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import Container from '@mui/material/Container';
+import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
-import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
@@ -224,8 +225,8 @@ class TeamWeeklyStats extends Component {
   render() {
     return (
       <Container>
-        <Grid container spacing={2} justifyContent="flex-start" alignItems="flex-end">
-          <Grid item xs={2}>
+        <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
+          <FormControl variant="filled" sx={{ minWidth: 160 }}>
             <InputLabel id="team-label">Team</InputLabel>
             <Select
               labelId="team-label"
@@ -236,10 +237,9 @@ class TeamWeeklyStats extends Component {
               {this.teams.map(team => (
                 <MenuItem value={team.team_id} key={team.team_id}>{team.name}</MenuItem>
               ))}
-
             </Select>
-          </Grid>
-          <Grid item xs={2}>
+          </FormControl>
+          <FormControl variant="filled" sx={{ minWidth: 80 }}>
             <InputLabel id="week-label">Week</InputLabel>
             <Select
               labelId="week-label"
@@ -250,33 +250,28 @@ class TeamWeeklyStats extends Component {
               {[...Array(this.league.current_week-this.league.start_week+1).keys()].map(i => (
                 <MenuItem value={i+this.league.start_week} key={i+this.league.start_week}>{i+this.league.start_week}</MenuItem>
               ))}
-
             </Select>
-          </Grid>
-          <Grid item xs={4}>
-            <ToggleButtonGroup
-              value={this.state.types}
-              onChange={this.onChangeType}
-              aria-label="type-selector"
-            >
-              <ToggleButton value="Roster" aria-label="Roster">Roster</ToggleButton>
-              <ToggleButton value="BN" aria-label="BN">BN</ToggleButton>
-              <ToggleButton value="IL" aria-label="IL">IL</ToggleButton>
-              <ToggleButton value="NA" aria-label="NA">NA</ToggleButton>
-            </ToggleButtonGroup>
-          </Grid>
-          <Grid item xs={4}>
-            <ToggleButtonGroup
-              value={this.state.compositeStatFormat}
-              exclusive
-              onChange={this.onChangeCompositeStatsFormat}
-              aria-label="composite-stats-format"
-            >
-              <ToggleButton value="value" aria-label="value">Value</ToggleButton>
-              <ToggleButton value="raw" aria-label="raw">Raw</ToggleButton>
-            </ToggleButtonGroup>
-          </Grid>
-        </Grid>
+          </FormControl>
+          <ToggleButtonGroup
+            value={this.state.types}
+            onChange={this.onChangeType}
+            aria-label="type-selector"
+          >
+            <ToggleButton value="Roster" aria-label="Roster">Roster</ToggleButton>
+            <ToggleButton value="BN" aria-label="BN">BN</ToggleButton>
+            <ToggleButton value="IL" aria-label="IL">IL</ToggleButton>
+            <ToggleButton value="NA" aria-label="NA">NA</ToggleButton>
+          </ToggleButtonGroup>
+          <ToggleButtonGroup
+            value={this.state.compositeStatFormat}
+            exclusive
+            onChange={this.onChangeCompositeStatsFormat}
+            aria-label="composite-stats-format"
+          >
+            <ToggleButton value="value" aria-label="value">Value</ToggleButton>
+            <ToggleButton value="raw" aria-label="raw">Raw</ToggleButton>
+          </ToggleButtonGroup>
+        </Stack>
 
         {this.state.fetching ?
           <h3 className="fetching-text">Fetching</h3> :

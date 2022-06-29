@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import Paper from '@mui/material/Paper';
+import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
-import Grid from '@mui/material/Grid';
+import Paper from '@mui/material/Paper';
+import Stack from '@mui/material/Stack';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import CircleIcon from '@mui/icons-material/Circle';
 
 import { apis } from '../utils/apis.js';
 
@@ -16,12 +18,6 @@ function LeagueSeasonalStats(props) {
   const [type, setType] = useState('value');  // 'value'|'rank'
   const [stats, setStats] = useState({});  // {<team_id>: [{stat_id:, value:, rank:}, ]}
   const [h2h, setH2H] = useState({});      // {<team_id>: {<opteam_id>: {win:, lose:, status: 'win'|'lose'|'tie' }}}
-
-  const color = {
-    win: '#F1D9FA',
-    lose: '#FAF2E1',
-    tie: '#f9f8f1'
-  }
 
   useEffect(() => {
     const teams = props.league.teams.team;
@@ -147,19 +143,17 @@ function LeagueSeasonalStats(props) {
 
   return (
     <Container>
-      <Grid container spacing={2} justifyContent="flex-start" alignItems="flex-end">
-        <Grid item xs={2}>
-          <ToggleButtonGroup
-            value={type}
-            exclusive
-            onChange={onSelectType}
-            aria-label="type-selector"
-          >
-            <ToggleButton value="value" aria-label="value">Value</ToggleButton>
-            <ToggleButton value="rank" aria-label="rank">Rank</ToggleButton>
-          </ToggleButtonGroup>
-        </Grid>
-      </Grid>
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
+        <ToggleButtonGroup
+          value={type}
+          exclusive
+          onChange={onSelectType}
+          aria-label="type-selector"
+        >
+          <ToggleButton value="value" aria-label="value">Value</ToggleButton>
+          <ToggleButton value="rank" aria-label="rank">Rank</ToggleButton>
+        </ToggleButtonGroup>
+      </Stack>
 
       {fetching ?
         <h3 className="fetching-text">Fetching</h3> : (
@@ -215,6 +209,12 @@ function LeagueSeasonalStats(props) {
               </Table>
             </TableContainer>
 
+            <Stack direction="row" spacing={1} sx={{ mt: 4 }}>
+              <Chip icon={<CircleIcon sx={{ "&&": { color: "status.win" }}}/>} label="Win" variant="outlined" size="small"/>
+              <Chip icon={<CircleIcon sx={{ "&&": { color: "status.lose" }}}/>} label="Lose" variant="outlined" size="small"/>
+              <Chip icon={<CircleIcon sx={{ "&&": { color: "status.tie" }}}/>} label="Tie" variant="outlined" size="small"/>
+            </Stack>
+
             <TableContainer component={Paper} sx={{ my: 2 }}>
               <Table sx={{ minWidth: 650 }} size="small" aria-label="h2h table">
                 <TableHead>
@@ -241,7 +241,12 @@ function LeagueSeasonalStats(props) {
                         }
                         else {
                           let result = h2h[team.team_id][teamRow.team_id];
-                          return <TableCell align="right" style={{backgroundColor: color[result.status]}}>{`${result.lose}-${result.win}`}</TableCell>;
+                          let colorType; // reverse win/lose color
+                          if (result.status === 'win') {colorType = 'lose';}
+                          else if (result.status === 'lose') {colorType = 'win';}
+                          else {colorType = result.status;}
+
+                          return <TableCell align="right" sx={{bgcolor: `status.${colorType}`}}>{`${result.lose}-${result.win}`}</TableCell>;
                         }
                       })}
                     </TableRow>
