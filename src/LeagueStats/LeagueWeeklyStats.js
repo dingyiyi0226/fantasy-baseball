@@ -160,6 +160,15 @@ function LeagueWeeklyStats(props) {
     return `${win}-${lose}-${tie}`;
   }
 
+  const getRankAvg = (team) => {
+    if (stats[team]) {
+      return (Object.values(stats[team]).reduce((pv, v) => pv+v.rank, 0) / Object.values(stats[team]).length).toFixed(2);
+    }
+    else {
+      return null;
+    }
+  }
+
   const onSelectWeek = (e) => {
     if (fetching) {
       return;
@@ -249,8 +258,7 @@ function LeagueWeeklyStats(props) {
                     </TableCell>
                     {teams.map(team =>
                       <TableCell align="right" key={team.team_id}>
-                        {(Object.values(stats[team.team_id])
-                          .reduce((pv, v) => pv+v.rank, 0) / 14).toFixed(2)}
+                        {getRankAvg(team.team_id)}
                       </TableCell>
                     )}
                   </TableRow>
