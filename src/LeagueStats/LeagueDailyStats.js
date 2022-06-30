@@ -254,12 +254,12 @@ function LeagueDailyStats(props) {
         <h3 className="fetching-text">Fetching</h3> : (
           <React.Fragment>
             <TableContainer component={Paper} sx={{ my: 2 }}>
-              <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
+              <Table sx={{ minWidth: 700, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">
                 <TableHead>
                   <TableRow>
-                    <TableCell> </TableCell>
+                    <TableCell sx={{minWidth: 70, maxWidth: 100}}> </TableCell>
                     {teams.map((team) => (
-                      <TableCell width="9%" align="right" sx={{ bgcolor: `matchup.${matchupPair[team.team_id]}` }}>
+                      <TableCell align="right" sx={{minWidth: 70, bgcolor: `matchup.${matchupPair[team.team_id]}`}} key={team.team_id}>
                         {team.name}
                       </TableCell>
                     ))}
@@ -268,19 +268,20 @@ function LeagueDailyStats(props) {
                 <TableBody>
                   {statCate.map((stat) => (
                     <TableRow
-                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      key={stat.stat_id}
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 }}}
                     >
                       <TableCell align="right" component="th" scope="row">
                         {stat.display_name}
                       </TableCell>
                       {type === 'value' ?
                         Object.keys(stats).map((teamID) => (
-                        <TableCell align="right">
+                        <TableCell align="right" key={teamID}>
                           {stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).value}
                         </TableCell>
                         )) :
                         Object.keys(stats).map((teamID) => (
-                        <TableCell align="right">
+                        <TableCell align="right" key={teamID}>
                           {stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).rank}
                         </TableCell>
                         ))
@@ -294,7 +295,7 @@ function LeagueDailyStats(props) {
                       Avg. Rank
                     </TableCell>
                     {teams.map(team =>
-                      <TableCell align="right">
+                      <TableCell align="right" key={team.team_id}>
                         {stats[team.team_id] ?
                           (Object.values(stats[team.team_id]).reduce((pv, v) => pv+v.rank, 0) / 14).toFixed(2) :
                           null
@@ -313,12 +314,12 @@ function LeagueDailyStats(props) {
             </Stack>
 
             <TableContainer component={Paper} sx={{ my: 2 }}>
-              <Table sx={{ minWidth: 650 }} size="small" aria-label="h2h table">
+              <Table sx={{ minWidth: 700, 'th': {fontWeight: 'bold'}}} size="small" aria-label="h2h-table">
                 <TableHead>
                   <TableRow>
-                    <TableCell> </TableCell>
+                    <TableCell sx={{minWidth: 70, maxWidth: 100}}> </TableCell>
                     {teams.map((team) => (
-                      <TableCell width="9%" align="right">
+                      <TableCell align="right" sx={{minWidth: 70}} key={team.team_id}>
                         {team.name}
                       </TableCell>
                     ))}
@@ -327,6 +328,7 @@ function LeagueDailyStats(props) {
                 <TableBody>
                   {teams.map(team => (
                     <TableRow
+                      key={team.team_id}
                       sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                     >
                       <TableCell align="right" component="th" scope="row">
@@ -334,7 +336,7 @@ function LeagueDailyStats(props) {
                       </TableCell>
                       {teams.map(teamRow => {
                         if (team.team_id === teamRow.team_id) {
-                          return <TableCell align="right"></TableCell>;
+                          return <TableCell align="right" key={teamRow.team_id}></TableCell>;
                         }
                         else {
                           let result = h2h[team.team_id][teamRow.team_id];
@@ -343,15 +345,15 @@ function LeagueDailyStats(props) {
                           else if (result.status === 'lose') {colorType = 'win';}
                           else {colorType = result.status;}
 
-                          return <TableCell align="right" sx={{bgcolor: `status.${colorType}`}}>{`${result.lose}-${result.win}`}</TableCell>;
+                          return <TableCell align="right" sx={{bgcolor: `status.${colorType}`}} key={teamRow.team_id}>{`${result.lose}-${result.win}`}</TableCell>;
                         }
                       })}
                     </TableRow>
                   ))}
                   <TableRow>
-                    <TableCell align="right">W-L-T</TableCell>
+                    <TableCell align="right" component="th" scope="row">W-L-T</TableCell>
                     {teams.map((team) => (
-                      <TableCell align="right">
+                      <TableCell align="right" key={team.team_id}>
                         {TeamH2HSumStr(h2h[team.team_id])}
                       </TableCell>
                     ))}
@@ -360,6 +362,7 @@ function LeagueDailyStats(props) {
               </Table>
             </TableContainer>
           </React.Fragment>
+
         )
       }
     </Container>

@@ -87,21 +87,21 @@ class TeamSeasonalStats extends Component {
         {this.state.fetching ?
           <h3 className="fetching-text">Fetching</h3> :
           <TableContainer component={Paper} sx={{ my: 2 }}>
-            <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
+            <Table sx={{ minWidth: 600, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">
               <TableHead>
                 <TableRow>
-                  <TableCell>Week</TableCell>
+                  <TableCell sx={{minWidth: 70, maxWidth: 100}}></TableCell>
                   {this.weeks.map(week => (
-                    <TableCell width="10%" align="right">{week}</TableCell>
+                    <TableCell align="right" sx={{minWidth: 75}} key={week}>{`W. ${week}`}</TableCell>
                   ))}
-                  <TableCell>Total</TableCell>
+                  <TableCell sx={{minWidth: 70, maxWidth: 100}}>Total</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell></TableCell>
                   {this.weeks.map(week => {
                     const start = this.gameWeeks.find(w => w.week===week).start;
                     return (
-                      <TableCell width="10%" align="right">{`${Number(start.split('-')[1])}/${Number(start.split('-')[2])}`}</TableCell>
+                      <TableCell align="right" key={week}>{`${Number(start.split('-')[1])}/${Number(start.split('-')[2])}`}</TableCell>
                     )
                   })}
                   <TableCell></TableCell>
@@ -110,13 +110,14 @@ class TeamSeasonalStats extends Component {
               <TableBody>
                 {this.statCate.map((stat) => (
                   <TableRow
+                    key={stat.stat_id}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
                     <TableCell align="right" component="th" scope="row">
                       {stat.display_name}
                     </TableCell>
                     {this.weeks.map(week => (
-                      <TableCell align="right">
+                      <TableCell align="right" key={week}>
                         {this.state.stats[week].find(s => s.stat_id === Number(stat.stat_id)).value}
                       </TableCell>
                     ))}

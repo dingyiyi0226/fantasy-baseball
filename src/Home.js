@@ -10,7 +10,7 @@ function Home(props) {
     <Container>
       <List>
         {props.league.teams.team.map(team => (
-          <ListItem>
+          <ListItem key={team.team_id}>
             <ListItemAvatar>
               <Avatar alt={team.name} src={team.team_logos.team_logo.url} />
             </ListItemAvatar>

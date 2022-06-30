@@ -276,19 +276,20 @@ class TeamWeeklyStats extends Component {
         {this.state.fetching ?
           <h3 className="fetching-text">Fetching</h3> :
           <TableContainer component={Paper} sx={{ my: 2 }}>
-            <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
+            <Table sx={{ minWidth: 700, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">
               <TableHead>
                 <TableRow>
-                  <TableCell> </TableCell>
+                  <TableCell sx={{minWidth: 70, maxWidth: 100}}> </TableCell>
                   {this.dates.map(date => (
-                    <TableCell width="10%" align="right">{date}</TableCell>
+                    <TableCell align="right" sx={{minWidth: 70}} key={date}>{date}</TableCell>
                   ))}
-                  <TableCell>Total</TableCell>
+                  <TableCell sx={{minWidth: 70, maxWidth: 100}}>Total</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {this.statCate.map((stat) => (
                   <TableRow
+                    key={stat.stat_id}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
                     <TableCell align="right" component="th" scope="row">
@@ -299,7 +300,7 @@ class TeamWeeklyStats extends Component {
                       ) : stat.display_name}
                     </TableCell>
                     {this.dates.map(date => (
-                      <TableCell align="right">
+                      <TableCell align="right" key={date}>
                         {isNaN(this.state.total[date][stat.stat_id]) ?
                           this.state.total[date][stat.stat_id] || 'NaN' :
                           Math.round(this.state.total[date][stat.stat_id]*100)/100

@@ -97,14 +97,14 @@ function TeamMatchups(props) {
 
       {fetching ?
         <h3 className="fetching-text">Fetching</h3> :
-        <TableContainer component={Paper} sx={{ my: 2, width: '50%' }}>
-          <Table size="small" sx={{ minWidth: 300 }} aria-label="matchup-table">
+        <TableContainer component={Paper} sx={{ my: 2, width: '70%' }}>
+          <Table size="small" sx={{minWidth: 300, 'th': {fontWeight: 'bold'}}} aria-label="matchup-table">
             <TableHead>
               <TableRow>
-                <TableCell> </TableCell>
-                <TableCell align="right">Opponent</TableCell>
-                <TableCell align="right">Status</TableCell>
-                <TableCell align="right">W-L-T</TableCell>
+                <TableCell sx={{minWidth: 80, maxWidth: 90}}> </TableCell>
+                <TableCell align="right" sx={{minWidth: 70}}>Opponent</TableCell>
+                <TableCell align="right" sx={{minWidth: 60, maxWidth: 90}}>Status</TableCell>
+                <TableCell align="right" sx={{minWidth: 70, maxWidth: 100}}>W-L-T</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -116,7 +116,7 @@ function TeamMatchups(props) {
                   <TableCell align="right" component="th" scope="row">
                     {`Week ${matchup.week}`}
                   </TableCell>
-                  <TableCell align="right" component="th" scope="row">
+                  <TableCell align="right">
                     {getOpponent(matchup, 'name')}
                   </TableCell>
                   <TableCell align="right">

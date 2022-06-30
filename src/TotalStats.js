@@ -134,13 +134,13 @@ class TotalStats extends Component {
 
         {this.state.fetching ?
           <h3 className="fetching-text">Fetching</h3> :
-          <TableContainer component={Paper} sx={{ my: 2}}>
-            <Table sx={{ minWidth: 650 }} size="small" aria-label="simple table">
+          <TableContainer component={Paper} sx={{my: 2}}>
+            <Table sx={{ minWidth: 700, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">
               <TableHead>
                 <TableRow>
-                  <TableCell width="4%"> </TableCell>
+                  <TableCell sx={{minWidth: 70, maxWidth: 100}}> </TableCell>
                   {this.teams.map((team) =>
-                    <TableCell align="right" width="9%">{team.name}</TableCell>
+                    <TableCell align="right" sx={{minWidth: 70}} key={team.team_id}>{team.name}</TableCell>
                   )}
                 </TableRow>
               </TableHead>
@@ -148,6 +148,7 @@ class TotalStats extends Component {
                 {this.statCate.filter(stat => this.state.statTypes.includes(stat.position_type))
                   .map((stat) => (
                   <TableRow
+                    key={stat.stat_id}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                   >
                     <TableCell align="right" component="th" scope="row">
@@ -155,7 +156,7 @@ class TotalStats extends Component {
                     </TableCell>
                     {Object.keys(this.state.stats).map((teamID) => {
                       const s = this.state.stats[teamID][stat.stat_id]
-                      return <TableCell align="right">{`${s.win}-${s.lose}-${s.tie}`}</TableCell>
+                      return <TableCell align="right" key={teamID}>{`${s.win}-${s.lose}-${s.tie}`}</TableCell>
                     })}
                   </TableRow>
                 ))}
@@ -166,7 +167,7 @@ class TotalStats extends Component {
                     Sum
                   </TableCell>
                   {this.teams.map(team =>
-                    <TableCell align="right">
+                    <TableCell align="right" key={team.team_id}>
                       {`${this.state.sum[team.team_id].win}-${this.state.sum[team.team_id].lose}-${this.state.sum[team.team_id].tie}`}
                     </TableCell>
                   )}
@@ -178,7 +179,7 @@ class TotalStats extends Component {
                     Rank
                   </TableCell>
                   {this.teams.map(team =>
-                    <TableCell align="right">
+                    <TableCell align="right" key={team.team_id}>
                       {this.state.rank[team.team_id]}
                     </TableCell>
                   )}
