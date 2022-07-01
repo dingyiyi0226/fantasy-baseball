@@ -3,9 +3,9 @@ const composite_stats = (stats, stat_id, is_str=false) => {
     return composite_stats_str(stats, stat_id);
   }
   else {
-    // Handle 0/0
+    // Handle 0/0, stat_id === 50, 60 return string
     const result = composite_stats_value(stats, stat_id);
-    return isNaN(result) ? undefined : result;
+    return stat_id !== 50 && stat_id !== 60 && isNaN(result) ? undefined : result;
   }
 }
 
@@ -140,7 +140,7 @@ const composite_stats_value = (stats, stat_id) => {
     case 27: // WHIP: (H+BB)/OUTS*3
       return (stats[34]+stats[39])/stats[33]*3;
     case 50: // IP: OUTS/3
-      return stats[33]/3;
+      return `${Math.floor(stats[33]/3)}.${stats[33]%3}`;
     case 54: // FPCT: (PO+A)/(PO+A+E)
       return (stats[51]+stats[52])/(stats[51]+stats[52]+stats[53]);
     case 55: // OPS: (H+BB+HBP)/(AB+BB+HBP+SF) + TB/AB

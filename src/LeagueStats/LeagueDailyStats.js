@@ -44,7 +44,8 @@ function LeagueDailyStats(props) {
 
   useEffect(() => {
     const teams = props.league.teams.team;
-    const statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
+    const statCate = props.league.settings.stat_categories.stats.stat;
+    const statCateKey = statCate.reduce((pv, v) => ({...pv, [v.stat_id]: v}), {});
     let date = searchParams.get('date');
     if (!date) {
       const today = new Date();
@@ -68,7 +69,7 @@ function LeagueDailyStats(props) {
       let teamsStats = {}
       const teamsStatsRaw = await apis.getTeamsStatsByDate(teams.length, date)
       teamsStatsRaw.forEach(team => {
-        teamsStats[team.team_id] = team.team_stats.stats.stat.filter(s => s.stat_id !== 60 && s.stat_id !== 50);
+        teamsStats[team.team_id] = team.team_stats.stats.stat;
       })
 
       Object.keys(teamsStats).forEach(team_id => {
@@ -79,7 +80,7 @@ function LeagueDailyStats(props) {
         })
       })
 
-      teamsStats = calulateRank(teamsStats);
+      calulateRank(teamsStats);
       let h2h = calculateH2H(teamsStats);
       setStats(teamsStats);
       setH2H(h2h);
@@ -99,34 +100,40 @@ function LeagueDailyStats(props) {
       })
 
       for (let [stat_id, stat] of Object.entries(statsT)){
-        const sort_order = statCate.find(s => s.stat_id === Number(stat_id)).sort_order === 0;
+        const sort_order = statCateKey[stat_id].sort_order === 0;
         stat.sort((a, b) => sort_order ? a-b : b-a)
       }
 
       Object.values(teamsStats).forEach(stats => {
         stats.forEach(stat => {
-          stat.rank = statsT[stat.stat_id].indexOf(stat.value) + 1;
+          if(statCateKey[stat.stat_id].is_only_display_stat) {
+            stat.rank = undefined;
+          }
+          else {
+            stat.rank = statsT[stat.stat_id].indexOf(stat.value) + 1;
+          }
         })
       })
-      return teamsStats
     }
 
     const calculateH2H = (teamsStats) => {
       let h2h = {};
+      let ranks = {};
+      teams.forEach(team => {
+        ranks[team.team_id] = teamsStats[team.team_id].reduce((pv, v) => ({...pv, [v.stat_id]: v.rank}), {});
+      })
+
       teams.forEach(team => {
         h2h[team.team_id] = {};
 
-        let myRanks = teamsStats[team.team_id].reduce((pv, v) => ({...pv, [v.stat_id]: v.rank}), {});
-
         Object.keys(teamsStats).filter(team_id => Number(team_id) !== team.team_id).forEach(team_id => {
-          let opRanks = teamsStats[team_id].reduce((pv, v) => ({...pv, [v.stat_id]: v.rank}), {});
           let win = 0;
           let lose = 0;
-          statCate.forEach(s => {
-            if (myRanks[s.stat_id] < opRanks[s.stat_id]) {
+          statCate.filter(s => !s.is_only_display_stat).forEach(s => {
+            if (ranks[team.team_id][s.stat_id] < ranks[team_id][s.stat_id]) {
               win += 1;
             }
-            else if (myRanks[s.stat_id] > opRanks[s.stat_id]) {
+            else if (ranks[team.team_id][s.stat_id] > ranks[team_id][s.stat_id]) {
               lose += 1;
             }
           })
@@ -190,7 +197,13 @@ function LeagueDailyStats(props) {
 
   const getRankAvg = (team) => {
     if (stats[team]) {
-      return (Object.values(stats[team]).reduce((pv, v) => pv+v.rank, 0) / Object.values(stats[team]).length).toFixed(2);
+      const ranks = [];
+      Object.values(stats[team]).forEach(s => {
+        if (s.rank !== undefined){
+          ranks.push(s.rank);
+        }
+      })
+      return (ranks.reduce((pv, v) => pv+v, 0) / ranks.length).toFixed(2);
     }
     else {
       return null;
@@ -215,7 +228,7 @@ function LeagueDailyStats(props) {
 
   const league = props.league;
   const teams = props.league.teams.team;
-  const statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
+  const statCate = props.league.settings.stat_categories.stats.stat;
 
   return (
     <Container>
@@ -278,7 +291,7 @@ function LeagueDailyStats(props) {
                   {statCate.map((stat) => (
                     <TableRow
                       key={stat.stat_id}
-                      sx={{ '&:last-child td, &:last-child th': { border: 0 }}}
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 }, bgcolor: stat.is_only_display_stat ? `background.paperDark` : null}}
                     >
                       <TableCell align="right" component="th" scope="row">
                         {stat.display_name}

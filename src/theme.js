@@ -18,6 +18,7 @@ const theme = createTheme({
     background: {
       default: '#fff8f2',
       paper: '#ffffff',
+      paperDark: '#f4f4f4',
     },
     status: {
       win: '#dbbbbc',

@@ -18,7 +18,7 @@ class TeamSeasonalStats extends Component {
 
     this.league = props.league;
     this.teams = props.league.teams.team;
-    this.statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
+    this.statCate = props.league.settings.stat_categories.stats.stat;
     this.gameWeeks = props.game.game_weeks.game_week;
 
     this.weeks = [...Array(props.league.current_week-props.league.start_week+1).keys()].map(i => i+props.league.start_week);
@@ -111,7 +111,7 @@ class TeamSeasonalStats extends Component {
                 {this.statCate.map((stat) => (
                   <TableRow
                     key={stat.stat_id}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 }, bgcolor: stat.is_only_display_stat ? `background.paperDark` : null}}
                   >
                     <TableCell align="right" component="th" scope="row">
                       {stat.display_name}

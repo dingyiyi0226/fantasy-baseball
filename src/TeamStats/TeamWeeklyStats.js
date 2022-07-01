@@ -23,7 +23,7 @@ class TeamWeeklyStats extends Component {
 
     this.league = props.league;
     this.teams = props.league.teams.team;
-    this.statCate = props.league.settings.stat_categories.stats.stat.filter(s => !s.is_only_display_stat);
+    this.statCate = props.league.settings.stat_categories.stats.stat;
     this.gameWeeks = props.game.game_weeks.game_week;
     this.allStatCate = props.game.stat_categories.stats.stat;
     this.dates = [];
@@ -290,7 +290,7 @@ class TeamWeeklyStats extends Component {
                 {this.statCate.map((stat) => (
                   <TableRow
                     key={stat.stat_id}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 }, bgcolor: stat.is_only_display_stat ? `background.paperDark` : null}}
                   >
                     <TableCell align="right" component="th" scope="row">
                       {this.state.compositeStatFormat === "raw" && this.allStatCate.find(s => s.stat_id === stat.stat_id).is_composite_stat ? (
