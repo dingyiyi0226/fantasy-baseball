@@ -22,9 +22,11 @@ function LeagueWeeklyStats(props) {
   const [fetching, setFetching] = useState(true);
   const [type, setType] = useState('value');  // 'value'|'rank'
   const [stats, setStats] = useState({});  // {<team_id>: [{stat_id:, value:, rank:}, ]}
-  const [h2h, setH2H] = useState({});      // {<team_id>: {<opteam_id>: {win:, lose:, status: 'win'|'lose'|'tie' }}}
+  const [h2h, setH2H] = useState({});      // {<team_id>: {<opteam_id>: {win: [], lose: [], status: 'win'|'lose'|'tie' }}}
+  const [opponent, setOpponent] = useState({});
   const [matchups, setMatchups] = useState([]);
-  const [matchupPair, setMatchupPair] = useState([]);
+  const [matchupPair, setMatchupPair] = useState({});
+  const [selectedTeam, setSelectedTeam] = useState(undefined);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -66,15 +68,18 @@ function LeagueWeeklyStats(props) {
     }
 
     const getMatchupsByWeek = async (week) => {
-      let matchups = await apis.getMatchupsByWeek(week)
-      let matchupPair = {}
+      let matchups = await apis.getMatchupsByWeek(week);
+      let opponent = {};
+      let matchupPair = {};
       matchups.forEach((matchup, i) => {
-        matchup.teams.team.forEach(team => {
-          matchupPair[team.team_id] = i
-        })
+        matchupPair[matchup.teams.team[0].team_id] = i;
+        matchupPair[matchup.teams.team[1].team_id] = i;
+        opponent[matchup.teams.team[0].team_id] = matchup.teams.team[1].team_id;
+        opponent[matchup.teams.team[1].team_id] = matchup.teams.team[0].team_id;
       })
       setMatchupPair(matchupPair);
       setMatchups(matchups);
+      setOpponent(opponent);
     }
 
     const calulateRank = (teamsStats) => {
@@ -118,20 +123,20 @@ function LeagueWeeklyStats(props) {
         h2h[team.team_id] = {};
 
         Object.keys(teamsStats).filter(team_id => Number(team_id) !== team.team_id).forEach(team_id => {
-          let win = 0;
-          let lose = 0;
+          let win = [];
+          let lose = [];
           statCate.filter(s => !s.is_only_display_stat).forEach(s => {
             if (ranks[team.team_id][s.stat_id] < ranks[team_id][s.stat_id]) {
-              win += 1;
+              win.push(s.stat_id);
             }
             else if (ranks[team.team_id][s.stat_id] > ranks[team_id][s.stat_id]) {
-              lose += 1;
+              lose.push(s.stat_id);
             }
           })
           let status;
-          if (win > lose) {
+          if (win.length > lose.length) {
             status = 'win';
-          } else if (win < lose) {
+          } else if (win.length < lose.length) {
             status = 'lose';
           } else {
             status = 'tie';
@@ -194,6 +199,14 @@ function LeagueWeeklyStats(props) {
     setType(e.target.value);
   }
 
+  const onMouseEnterTeam = (e) => {
+    setSelectedTeam(e.target.getAttribute('value'));
+  }
+
+  const onMouseLeaveTeam = (e) => {
+    setSelectedTeam(undefined);
+  }
+
   const league = props.league;
   const teams = props.league.teams.team;
   const statCate = props.league.settings.stat_categories.stats.stat;
@@ -234,7 +247,8 @@ function LeagueWeeklyStats(props) {
                   <TableRow>
                     <TableCell sx={{minWidth: 70, maxWidth: 100}}> </TableCell>
                     {teams.map((team) => (
-                      <TableCell align="right" sx={{minWidth: 70, bgcolor: `matchup.${matchupPair[team.team_id]}`}} key={team.team_id}>
+                      <TableCell align="right" sx={{minWidth: 70, bgcolor: `matchup.${matchupPair[team.team_id]}`}}
+                        value={team.team_id} onMouseEnter={onMouseEnterTeam} onMouseLeave={onMouseLeaveTeam} key={team.team_id}>
                         {team.name}
                       </TableCell>
                     ))}
@@ -251,12 +265,14 @@ function LeagueWeeklyStats(props) {
                       </TableCell>
                       {type === 'value' ?
                         Object.keys(stats).map((teamID) => (
-                        <TableCell align="right" key={teamID}>
+                        <TableCell align="right" key={teamID}
+                          sx={{bgcolor: (selectedTeam && matchupPair[selectedTeam] === matchupPair[teamID] && h2h[teamID][opponent[teamID]].win.includes(stat.stat_id)) ? 'background.paperDark' : null}}>
                           {stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).value}
                         </TableCell>
                         )) :
                         Object.keys(stats).map((teamID) => (
-                        <TableCell align="right" key={teamID}>
+                        <TableCell align="right" key={teamID}
+                          sx={{bgcolor: (selectedTeam && matchupPair[selectedTeam] === matchupPair[teamID] && h2h[teamID][opponent[teamID]].win.includes(stat.stat_id)) ? 'background.paperDark' : null}}>
                           {stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).rank}
                         </TableCell>
                         ))
@@ -342,7 +358,11 @@ function LeagueWeeklyStats(props) {
                           else if (result.status === 'lose') {colorType = 'win';}
                           else {colorType = result.status;}
 
-                          return <TableCell align="right" sx={{bgcolor: `status.${colorType}`}} key={teamRow.team_id}>{`${result.lose}-${result.win}`}</TableCell>;
+                          return (
+                            <TableCell align="right" sx={{bgcolor: `status.${colorType}`}} key={teamRow.team_id}>
+                              {`${result.lose.length}-${result.win.length}`}
+                            </TableCell>
+                          )
                         }
                       })}
                     </TableRow>
