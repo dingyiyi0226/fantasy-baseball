@@ -195,6 +195,19 @@ const apis = {
     }
   },
 
+  async getPlayersByActualRanking(start=0, count=25) {
+    // max count = 25
+    const query =  `${baseURL}/league/${LEAGUE_KEY}/players;sort=AR;start=${start};count=${count};out=ownership,stats`;
+
+    try {
+      const results = await makeAPIrequest(query);
+      return results.league.players.player;
+    } catch (err) {
+      console.error(`Error in getPlayersByActualRanking(): ${err}`);
+      return err;
+    }
+  },
+
 }
 
 export { apis, getToken };
