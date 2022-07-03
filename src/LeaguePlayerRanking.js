@@ -83,7 +83,7 @@ function LeaguePlayerRanking(props) {
     <Container>
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
         <FormControl variant="filled" sx={{ minWidth: 120 }}>
-          <InputLabel id="playerNum-label">Player Number</InputLabel>
+          <InputLabel id="playerNum-label">Max Ranking</InputLabel>
           <Select
             labelId="playerNum-label"
             id="playerNum-selector"
@@ -102,7 +102,7 @@ function LeaguePlayerRanking(props) {
       {fetching ?
         <h3 className="fetching-text">Fetching</h3> : (
           <Grid container spacing={2} sx={{my: 1}}>
-            {teams.map(team => (
+            {teams.sort((a, b) => Object.keys(teamPlayers[b.team_id]).length - Object.keys(teamPlayers[a.team_id]).length).map(team => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={team.team_id}>
                 <TableContainer component={Paper}>
                   <Table size="small" sx={{'th': {fontWeight: 'bold'}}} aria-label="team-table">
