@@ -10,6 +10,7 @@ import LeagueStats from './LeagueStats';
 import TeamStats from './TeamStats';
 import TotalStats from './TotalStats.js';
 import LeaguePlayerRanking from './LeaguePlayerRanking.js';
+import LeagueTransaction from './LeagueTransaction.js';
 
 import { apis } from './utils/apis.js';
 
@@ -55,6 +56,7 @@ class Main extends Component {
               <Route path="total" element={this.state.fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
               <Route path="team/*" element={this.state.fetching ? this.fetchingElement : <TeamStats league={this.state.league} game={this.state.game}/>} />
               <Route path="player-ranking" element={this.state.fetching ? this.fetchingElement : <LeaguePlayerRanking league={this.state.league} />} />
+              <Route path="transaction" element={this.state.fetching ? this.fetchingElement : <LeagueTransaction league={this.state.league} game={this.state.game}/>} />
             </Route>
           </Routes>
         </Box>

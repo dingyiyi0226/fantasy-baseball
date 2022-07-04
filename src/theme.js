@@ -27,7 +27,12 @@ const theme = createTheme({
     },
     matchup: [
       '#ecf3fb', '#d3e1ec', '#bbccdb', '#f4eadd', '#dbcabb', '#bda795'
-    ]
+    ],
+    transaction: {
+      add: '#9e221d',
+      drop: '#9d9f30',
+      timestamp: '#a9998b',
+    },
   },
   typography: {
     fontFamily: 'Lora'

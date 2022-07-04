@@ -208,6 +208,19 @@ const apis = {
     }
   },
 
+  async getTransactionsByTeam(team) {
+    const team_key = `${LEAGUE_KEY}.t.${team}`;
+    const query = `${baseURL}/league/${LEAGUE_KEY}/transactions;team_key=${team_key}`;
+
+    try {
+      const results = await makeAPIrequest(query);
+      return results.league.transactions.transaction;
+    } catch (err) {
+      console.error(`Error in getTransactionsByTeam(): ${err}`);
+      return err;
+    }
+  },
+
 }
 
 export { apis, getToken };

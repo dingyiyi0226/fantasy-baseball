@@ -79,6 +79,12 @@ function Sidebar(props) {
           </ListItem>
 
           <ListItem disablePadding>
+            <ListItemButton component={Link} to="transaction">
+              <ListItemText primary="Transactions" />
+            </ListItemButton>
+          </ListItem>
+
+          <ListItem disablePadding>
             <ListItemButton component={Link} to="total">
               <ListItemText primary="Total Result" />
             </ListItemButton>
