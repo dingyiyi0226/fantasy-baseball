@@ -9,6 +9,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import CircleIcon from '@mui/icons-material/Circle';
 
+import FetchingText from '../components/FetchingText.js';
 import { apis } from '../utils/apis.js';
 
 
@@ -178,7 +179,7 @@ function LeagueSeasonalStats(props) {
       </Stack>
 
       {fetching ?
-        <h3 className="fetching-text">Fetching</h3> : (
+        <FetchingText /> : (
           <React.Fragment>
             <TableContainer component={Paper} sx={{ my: 2 }}>
               <Table sx={{minWidth: 700, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">

@@ -5,7 +5,8 @@ import Box from '@mui/material/Box';
 
 import AuthContext from './AuthContext.js'
 import Header from './Header.js'
-import { Login, LoginRedirect } from './Login.js'
+import  Login from './Login.js'
+import  LoginRedirect from './LoginRedirect.js'
 import Main from './Main.js'
 
 import { tokenExisted, clearToken } from './utils/auth.js';
@@ -42,6 +43,7 @@ class App extends Component {
                   <Route index element=<Navigate to="login" replace={true} />/>
                   <Route path="login" element=<Login/>/>
                   <Route path="home" element=<LoginRedirect/>/>
+                  <Route path="*" element=<Navigate to="login" replace={true} />/>
                 </Route>
               </Routes>
             )}

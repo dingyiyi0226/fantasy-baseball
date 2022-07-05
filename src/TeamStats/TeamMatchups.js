@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 
+import FetchingText from '../components/FetchingText.js';
 import { apis } from '../utils/apis.js';
 
 
@@ -96,7 +97,7 @@ function TeamMatchups(props) {
       </Stack>
 
       {fetching ?
-        <h3 className="fetching-text">Fetching</h3> :
+        <FetchingText /> :
         <TableContainer component={Paper} sx={{ my: 2, width: '70%' }}>
           <Table size="small" sx={{minWidth: 300, 'th': {fontWeight: 'bold'}}} aria-label="matchup-table">
             <TableHead>

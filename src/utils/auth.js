@@ -15,7 +15,7 @@ async function getToken(authCode) {
 
   if (tokenExisted()) {
     console.debug('User is already login');
-    return
+    return true;
   }
 
   try {
@@ -30,10 +30,12 @@ async function getToken(authCode) {
 
     sessionStorage.setItem('access_token', response.data.access_token);
     sessionStorage.setItem('refresh_token', response.data.refresh_token);
+    return true;
 
   } catch (error) {
     console.error(`Error in getToken(): ${error.response.data}`);
     console.error(error.config);
+    return false;
   }
 }
 

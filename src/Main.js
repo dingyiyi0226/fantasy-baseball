@@ -11,6 +11,7 @@ import TeamStats from './TeamStats';
 import TotalStats from './TotalStats.js';
 import LeaguePlayerRanking from './LeaguePlayerRanking.js';
 import LeagueTransaction from './LeagueTransaction.js';
+import FetchingText from './components/FetchingText.js';
 
 import { apis } from './utils/apis.js';
 
@@ -39,8 +40,6 @@ class Main extends Component {
     })
   }
 
-  fetchingElement = <h3 className="fetching-text">Fetching</h3>
-
 
   render() {
     return (
@@ -51,12 +50,12 @@ class Main extends Component {
           <Routes>
             <Route path="/">
               <Route index element=<Navigate to="home" replace={true} />/>
-              <Route path="home" element={this.state.fetching ? this.fetchingElement : <Home league={this.state.league}/>} />
-              <Route path="league/*" element={this.state.fetching ? this.fetchingElement : <LeagueStats league={this.state.league} game={this.state.game}/>} />
-              <Route path="total" element={this.state.fetching ? this.fetchingElement : <TotalStats league={this.state.league} />} />
-              <Route path="team/*" element={this.state.fetching ? this.fetchingElement : <TeamStats league={this.state.league} game={this.state.game}/>} />
-              <Route path="player-ranking" element={this.state.fetching ? this.fetchingElement : <LeaguePlayerRanking league={this.state.league} />} />
-              <Route path="transaction" element={this.state.fetching ? this.fetchingElement : <LeagueTransaction league={this.state.league} game={this.state.game}/>} />
+              <Route path="home" element={this.state.fetching ? <FetchingText /> : <Home league={this.state.league}/>} />
+              <Route path="league/*" element={this.state.fetching ? <FetchingText /> : <LeagueStats league={this.state.league} game={this.state.game}/>} />
+              <Route path="total" element={this.state.fetching ? <FetchingText /> : <TotalStats league={this.state.league} />} />
+              <Route path="team/*" element={this.state.fetching ? <FetchingText /> : <TeamStats league={this.state.league} game={this.state.game}/>} />
+              <Route path="player-ranking" element={this.state.fetching ? <FetchingText /> : <LeaguePlayerRanking league={this.state.league} />} />
+              <Route path="transaction" element={this.state.fetching ? <FetchingText /> : <LeagueTransaction league={this.state.league} game={this.state.game}/>} />
             </Route>
           </Routes>
         </Box>

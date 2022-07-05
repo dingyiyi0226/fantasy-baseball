@@ -10,6 +10,7 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
+import FetchingText from './components/FetchingText.js';
 import { apis } from './utils/apis.js'
 
 
@@ -100,7 +101,7 @@ function LeaguePlayerRanking(props) {
       </Stack>
 
       {fetching ?
-        <h3 className="fetching-text">Fetching</h3> : (
+        <FetchingText /> : (
           <Grid container spacing={2} sx={{my: 1}}>
             {[...teams].sort((a, b) => Object.keys(teamPlayers[b.team_id]).length - Object.keys(teamPlayers[a.team_id]).length).map(team => (
               <Grid item xs={12} sm={6} md={4} lg={3} key={team.team_id}>

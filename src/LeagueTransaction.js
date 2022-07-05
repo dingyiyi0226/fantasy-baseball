@@ -14,6 +14,7 @@ import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 
+import FetchingText from './components/FetchingText.js';
 import { apis } from './utils/apis.js'
 
 
@@ -110,7 +111,7 @@ function LeagueTransaction(props) {
       </Stack>
 
       {fetching ?
-        <h3 className="fetching-text">Fetching</h3> : (
+        <FetchingText /> : (
           <Grid container spacing={2} sx={{my: 1}}>
             {[...teams].sort((a, b) => weekTransactions[b.team_id].length - weekTransactions[a.team_id].length)
               .map(team => (

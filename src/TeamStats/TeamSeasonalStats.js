@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 
+import FetchingText from '../components/FetchingText.js';
 import { apis } from '../utils/apis.js';
 
 
@@ -85,7 +86,7 @@ class TeamSeasonalStats extends Component {
         </Stack>
 
         {this.state.fetching ?
-          <h3 className="fetching-text">Fetching</h3> :
+          <FetchingText /> :
           <TableContainer component={Paper} sx={{ my: 2 }}>
             <Table sx={{ minWidth: 600, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">
               <TableHead>
