@@ -51,7 +51,8 @@ function LeagueDailyStats(props) {
     const statCateKey = statCate.reduce((pv, v) => ({...pv, [v.stat_id]: v}), {});
     let date = searchParams.get('date');
     if (!date) {
-      const today = new Date();
+      let today = new Date();
+      today.setMinutes(today.getMinutes() + today.getTimezoneOffset() - 420); // set today to 'America/Los_Angeles' (UTC-7)
       setSearchParams({date: `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`});
       return;
     }
