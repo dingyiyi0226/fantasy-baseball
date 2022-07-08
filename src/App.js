@@ -3,14 +3,13 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Box from '@mui/material/Box';
 
-import AuthContext from './AuthContext.js'
+import AuthContext from './contexts/AuthContext.js'
 import Header from './Header.js'
 import  Login from './Login.js'
 import  LoginRedirect from './LoginRedirect.js'
 import Main from './Main.js'
 
 import { tokenExisted, clearToken } from './utils/auth.js';
-import './App.css';
 
 
 class App extends Component {

@@ -9,7 +9,7 @@ import Link from '@mui/material/Link';
 import IconButton from '@mui/material/IconButton';
 import GitHubIcon from '@mui/icons-material/GitHub';
 
-import AuthContext from './AuthContext.js';
+import AuthContext from './contexts/AuthContext.js';
 
 export default function Header() {
   const {isLogin, setLogin} = useContext(AuthContext);

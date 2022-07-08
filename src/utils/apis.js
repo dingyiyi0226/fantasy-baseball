@@ -1,9 +1,9 @@
-import axios from 'axios'
-import { XMLParser } from 'fast-xml-parser'
+import axios from 'axios';
+import { XMLParser } from 'fast-xml-parser';
 
-import { getToken, refreshToken } from './auth.js'
+import { getToken, refreshToken } from './auth.js';
 
-const baseURL = `${process.env.REACT_APP_BACKEND_URL}/api`
+const baseURL = `${process.env.REACT_APP_BACKEND_URL}/api`;
 let LEAGUE_KEY = '';
 
 async function makeAPIrequest(url) {
@@ -61,6 +61,40 @@ const apis = {
       return metaData;
     } catch (err) {
       console.error(`Error in getMetadata(): ${err}`);
+      return null;
+    }
+  },
+
+  async getGame() {
+    try {
+      const query = `${baseURL}/game/mlb;out=game_weeks,stat_categories`;
+      const results = await makeAPIrequest(query);
+      return results.game;
+    } catch (err) {
+      console.error(`Error in getGame(): ${err}`);
+      return null;
+    }
+  },
+
+  async getLeagueKey(gameKey) {
+    try {
+      const query = `${baseURL}/users;use_login=1/games;game_keys=${gameKey}/leagues`;
+      const results = await makeAPIrequest(query);
+      LEAGUE_KEY = results.users.user.games.game.leagues.league.league_key; // tmp
+      return results.users.user.games.game.leagues.league.league_key;
+    } catch (err) {
+      console.error(`Error in getLeagueKey(): ${err}`);
+      return null;
+    }
+  },
+
+  async getLeague(leagueKey) {
+    try {
+      const query = `${baseURL}/league/${leagueKey};out=teams,settings`;
+      const results = await makeAPIrequest(query);
+      return results.league;
+    } catch (err) {
+      console.error(`Error in getLeague(): ${err}`);
       return null;
     }
   },

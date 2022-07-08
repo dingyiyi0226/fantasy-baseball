@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
@@ -16,313 +17,271 @@ import Typography from '@mui/material/Typography';
 import FetchingText from '../components/FetchingText.js';
 import { apis } from '../utils/apis.js';
 import { composite_stats, composite_stats_formula } from '../utils/composite_stats.js';
+import { selectLeague, selectTeams, selectStatCate, selectStatCateFull, selectGameWeeks } from '../metadataSlice.js';
 
 
-class TeamWeeklyStats extends Component {
-  constructor(props) {
-    super(props)
+function TeamWeeklyStats(props) {
 
-    this.league = props.league;
-    this.teams = props.league.teams.team;
-    this.statCate = props.league.settings.stat_categories.stats.stat;
-    this.gameWeeks = props.game.game_weeks.game_week;
-    this.allStatCate = props.game.stat_categories.stats.stat;
-    this.dates = [];
+  const teams = useSelector(state => selectTeams(state));
+  const league = useSelector(state => selectLeague(state));
+  const statCate = useSelector(state => selectStatCate(state));
+  const statCateFull = useSelector(state => selectStatCateFull(state));
+  const gameWeeks = useSelector(state => selectGameWeeks(state));
 
-    this.state = {
-      fetching: true,
-      team: 1,
-      week: props.league.current_week,
-      types: ['Roster'], // 'Roster', 'BN', 'IL', 'NA'
-      compositeStatFormat: 'value', // 'value', 'raw'
-      stats: {},    // {[date]: [player_stats,]}
-      rosters: {},  // {[date]: [player,]}
-      total: {},    // {[date]: {[stat_id]: value}}
-      weeklyStats: {}, // {[stat_id]: value}
-    }
+  const [fetching, setFetching] = useState(true);
+  const [team, setTeam] = useState(1);
+  const [week, setWeek] = useState(league.current_week);
+  const [types, setTypes] = useState(['Roster']);  // 'Roster', 'BN', 'IL', 'NA'
+  const [compStatFormat, setCompStatFormat] = useState('value');  // 'value', 'raw'
+  const [stats, setStats] = useState({});      // {[date]: [player_stats,]}
+  const [rosters, setRosters] = useState({});  // {[date]: [player,]}
 
-    this.calculateDates();
-  }
-
-  calculateDates = (week=null) => {
+  const dates = useMemo(() => {
     const dates = []
-    const gameWeek = this.gameWeeks.find(w => w.week === (week || this.state.week));
+    const gameWeek = gameWeeks.find(w => w.week === (week));
     const start = new Date(gameWeek.start.split('-')[0], gameWeek.start.split('-')[1]-1, gameWeek.start.split('-')[2]);
     const end = new Date(gameWeek.end.split('-')[0], gameWeek.end.split('-')[1]-1, gameWeek.end.split('-')[2]);
     for (let d = start; d <= end; d.setDate(d.getDate()+1)) {
       dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
     }
-    this.dates = dates;
-  }
+    return dates;
+  }, [week, gameWeeks])
 
-  onSelectTeam = (e) => {
-    if (this.state.fetching) {
-      return
-    }
-    this.setState({
-      team: e.target.value,
-      fetching: true
-    })
-    this.getTeamStats(e.target.value);
-  }
+  useEffect(() => {
+    const getTeamStats = async () => {
+      let stats = {};
+      let rosters = {};
 
-  onSelectWeek = (e) => {
-    if (this.state.fetching) {
-      return
-    }
-    this.calculateDates(e.target.value);
-    this.setState({
-      week: e.target.value,
-      fetching: true
-    })
-    this.getTeamStats();
-  }
-
-  onChangeType = (e, types) => {
-    let total = {};
-    this.setState(state => {
-      for(let date of this.dates) {
-        total[date] = this.calculateDailyStats(date, undefined, undefined, types);
-      }
-      const weeklyStats = this.calculateWeeklyStats(total);
-      return {
-        types: types,
-        total: total,
-        weeklyStats: weeklyStats,
-      };
-    })
-  }
-
-  onChangeCompositeStatsFormat = (e) => {
-    this.setState(state => {
-      Object.keys(state.total).forEach(date => {
-        this.changeComposite(state.total[date], e.target.value === 'raw');
-      })
-      this.changeComposite(state.weeklyStats, e.target.value === 'raw');
-
-      return {
-        compositeStatFormat: e.target.value,
-        total: state.total,
-        weeklyStats: state.weeklyStats,
-      }
-    })
-  }
-
-  changeComposite = (stats, toStr) => {
-    this.statCate.filter(stat => this.allStatCate.find(s => s.stat_id === stat.stat_id).is_composite_stat)
-      .forEach(stat => {
-        stats[stat.stat_id] = composite_stats(stats, stat.stat_id, toStr);
-    })
-  }
-
-  calculateDailyStats = (date, roster=null, stats=null, types=null) => {
-    let dailyTotal = {};
-    let statFull;
-
-    roster = roster || this.state.rosters[date];
-    stats = stats || this.state.stats[date];
-    types = types || this.state.types;
-    roster = roster.filter(player => {
-      if (types.includes(player.selected_position.position)){
-        return true;
-      }
-      else if (types.includes('Roster')) {
-        return !['BN', 'IL', 'NA'].includes(player.selected_position.position);
-      }
-      else {
-        return false;
-      }
-    }).map(player => player.player_key);
-
-    stats = stats.filter(stat => roster.includes(stat.player_key));
-    this.statCate.forEach(stat => {
-      statFull = this.allStatCate.find(s => s.stat_id === stat.stat_id);
-
-      if (statFull.is_composite_stat) {
-        if (!Array.isArray(statFull.base_stats.base_stat)) {
-          statFull.base_stats.base_stat = [statFull.base_stats.base_stat];
+      await Promise.all(dates.map(async (date) => {
+        const roster = await apis.getTeamRosterByDate(team, date);
+        let stat;
+        if (roster.length > 25) {
+          const [stat1, stat2] =  await Promise.all([
+            apis.getPlayerAllStatsByDate(roster.slice(0, 25).map(p => p.player_key), date),
+            apis.getPlayerAllStatsByDate(roster.slice(25).map(p => p.player_key), date)
+          ]);
+          stat = stat1.concat(stat2);
+        }
+        else {
+          stat = await apis.getPlayerAllStatsByDate(roster.map(p => p.player_key), date);
         }
 
-        statFull.base_stats.base_stat.forEach(bs => {
-          if (dailyTotal[bs.stat_id] === undefined) {
-            dailyTotal[bs.stat_id] = stats.reduce((pv, v) => {
-              let value = v.player_stats.stats.stat.find(s => s.stat_id === bs.stat_id)?.value ?? 0;
+        stats[date] = stat;
+        rosters[date] = roster;
+      }))
+      setStats(stats);
+      setRosters(rosters);
+      setFetching(false);
+    }
+    getTeamStats();
+  }, [team, dates])
+
+  const dailyStats = useMemo(() => {  // {[date]: {[stat_id]: value}}
+    if (Object.keys(stats).length === 0 || Object.keys(rosters).length === 0) {
+      return {};
+    }
+    let totalStats = {};
+
+    Object.keys(stats).forEach(date => {
+      let dailyTotal = {};
+      let statFull;
+
+      const roster = rosters[date].filter(player => {
+        if (types.includes(player.selected_position.position)){
+          return true;
+        }
+        else if (types.includes('Roster')) {
+          return !['BN', 'IL', 'NA'].includes(player.selected_position.position);
+        }
+        else {
+          return false;
+        }
+      }).map(player => player.player_key);
+
+      const dailyStats = stats[date].filter(stat => roster.includes(stat.player_key));
+
+      statCate.forEach(stat => {
+        statFull = statCateFull.find(s => s.stat_id === stat.stat_id);
+        if (statFull.is_composite_stat) {
+          const baseStats = Array.isArray(statFull.base_stats.base_stat) ? statFull.base_stats.base_stat : [statFull.base_stats.base_stat];
+
+          baseStats.forEach(bs => {
+            if (dailyTotal[bs.stat_id] === undefined) {
+              dailyTotal[bs.stat_id] = dailyStats.reduce((pv, v) => {
+                let value = v.player_stats.stats.stat.find(s => s.stat_id === bs.stat_id)?.value ?? 0;
+                return pv + (isNaN(value) ? 0 : value);
+              }, 0);
+            }
+          })
+          dailyTotal[stat.stat_id] = composite_stats(dailyTotal, stat.stat_id, compStatFormat === 'raw');
+        }
+        else {
+          if (dailyTotal[stat.stat_id] === undefined) {
+            dailyTotal[stat.stat_id] = dailyStats.reduce((pv, v) => {
+              let value = v.player_stats.stats.stat.find(s => s.stat_id === stat.stat_id)?.value ?? 0;
               return pv + (isNaN(value) ? 0 : value);
             }, 0);
           }
-        })
-        dailyTotal[stat.stat_id] = composite_stats(dailyTotal, stat.stat_id);
-      }
-      else {
-        if (dailyTotal[stat.stat_id] === undefined) {
-          dailyTotal[stat.stat_id] = stats.reduce((pv, v) => {
-            let value = v.player_stats.stats.stat.find(s => s.stat_id === stat.stat_id)?.value ?? 0;
-            return pv + (isNaN(value) ? 0 : value);
-          }, 0);
         }
-      }
+      })
+      totalStats[date] = dailyTotal;
     })
 
-    return dailyTotal;
-  }
+    return totalStats;
 
-  calculateWeeklyStats = (stats=null) => {
-    stats = stats || this.state.total;
+  }, [stats, rosters, types, compStatFormat, statCate, statCateFull])
 
+  const weeklyStats = useMemo(() => {  // {[stat_id]: value}
     let weeklyStats = {};
     let statFull;
-    this.statCate.forEach(stat => {
-      statFull = this.allStatCate.find(s => s.stat_id === stat.stat_id);
+
+    statCate.forEach(stat => {
+      statFull = statCateFull.find(s => s.stat_id === stat.stat_id);
       if (statFull.is_composite_stat) {
-        statFull.base_stats.base_stat.forEach(bs => {
+        const baseStats = Array.isArray(statFull.base_stats.base_stat) ? statFull.base_stats.base_stat : [statFull.base_stats.base_stat];
+
+        baseStats.forEach(bs => {
           if (weeklyStats[bs.stat_id] === undefined) {
-            weeklyStats[bs.stat_id] = Object.values(stats).reduce((pv, v) => {
+            weeklyStats[bs.stat_id] = Object.values(dailyStats).reduce((pv, v) => {
               return pv + (isNaN(v[bs.stat_id]) ? 0 : v[bs.stat_id]);
             }, 0);
           }
         })
-        weeklyStats[stat.stat_id] = composite_stats(weeklyStats, stat.stat_id);
+        weeklyStats[stat.stat_id] = composite_stats(weeklyStats, stat.stat_id, compStatFormat === 'raw');
       }
       else {
         if (weeklyStats[stat.stat_id] === undefined) {
-          weeklyStats[stat.stat_id] = Object.values(stats).reduce((pv, v) => {
+          weeklyStats[stat.stat_id] = Object.values(dailyStats).reduce((pv, v) => {
             return pv + (isNaN(v[stat.stat_id]) ? 0 : v[stat.stat_id]);
           }, 0);
         }
       }
-
     })
     return weeklyStats;
+  }, [dailyStats, compStatFormat, statCate, statCateFull])
+
+  const onSelectTeam = (e) => {
+    if (fetching) {
+      return
+    }
+    setTeam(e.target.value);
+    setFetching(true);
   }
 
-  getTeamStats = async (team) => {
-    let stats = {};
-    let rosters = {};
-    let total = {};
-
-    await Promise.all(this.dates.map(async (date) => {
-      const roster = await apis.getTeamRosterByDate(team || this.state.team, date);
-      const stat = await apis.getPlayerAllStatsByDate(roster.map(p => p.player_key), date);
-      stats[date] = stat;
-      rosters[date] = roster;
-      total[date] = this.calculateDailyStats(date, roster, stat);
-    }))
-
-    const weeklyStats = this.calculateWeeklyStats(total);
-
-    this.setState({
-      stats: stats,
-      rosters: rosters,
-      total: total,
-      weeklyStats: weeklyStats,
-      fetching: false
-    })
+  const onSelectWeek = (e) => {
+    if (fetching) {
+      return
+    }
+    setWeek(e.target.value);
+    setFetching(true);
   }
 
-  async componentDidMount() {
-    await this.getTeamStats();
+  const onChangeType = (e, types) => {
+    setTypes(types);
   }
 
-  render() {
-    return (
-      <Container>
-        <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
-          <FormControl variant="filled" sx={{ minWidth: 160 }}>
-            <InputLabel id="team-label">Team</InputLabel>
-            <Select
-              labelId="team-label"
-              id="team-selector"
-              value={this.state.team}
-              onChange={this.onSelectTeam}
-            >
-              {this.teams.map(team => (
-                <MenuItem value={team.team_id} key={team.team_id}>{team.name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl variant="filled" sx={{ minWidth: 80 }}>
-            <InputLabel id="week-label">Week</InputLabel>
-            <Select
-              labelId="week-label"
-              id="week-selector"
-              value={this.state.week}
-              onChange={this.onSelectWeek}
-            >
-              {[...Array(this.league.current_week-this.league.start_week+1).keys()].map(i => (
-                <MenuItem value={i+this.league.start_week} key={i+this.league.start_week}>{i+this.league.start_week}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <ToggleButtonGroup
-            value={this.state.types}
-            onChange={this.onChangeType}
-            aria-label="type-selector"
+  const onChangeCompStatsFormat = (e) => {
+    setCompStatFormat(e.target.value);
+  }
+
+  return (
+    <Container>
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
+        <FormControl variant="filled" sx={{ minWidth: 160 }}>
+          <InputLabel id="team-label">Team</InputLabel>
+          <Select
+            labelId="team-label"
+            id="team-selector"
+            value={team}
+            onChange={onSelectTeam}
           >
-            <ToggleButton value="Roster" aria-label="Roster">Roster</ToggleButton>
-            <ToggleButton value="BN" aria-label="BN">BN</ToggleButton>
-            <ToggleButton value="IL" aria-label="IL">IL</ToggleButton>
-            <ToggleButton value="NA" aria-label="NA">NA</ToggleButton>
-          </ToggleButtonGroup>
-          <ToggleButtonGroup
-            value={this.state.compositeStatFormat}
-            exclusive
-            onChange={this.onChangeCompositeStatsFormat}
-            aria-label="composite-stats-format"
+            {teams.map(team => (
+              <MenuItem value={team.team_id} key={team.team_id}>{team.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <FormControl variant="filled" sx={{ minWidth: 80 }}>
+          <InputLabel id="week-label">Week</InputLabel>
+          <Select
+            labelId="week-label"
+            id="week-selector"
+            value={week}
+            onChange={onSelectWeek}
           >
-            <ToggleButton value="value" aria-label="value">Value</ToggleButton>
-            <ToggleButton value="raw" aria-label="raw">Raw</ToggleButton>
-          </ToggleButtonGroup>
-        </Stack>
+            {[...Array(league.current_week-league.start_week+1).keys()].map(i => (
+              <MenuItem value={i+league.start_week} key={i+league.start_week}>{i+league.start_week}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <ToggleButtonGroup
+          value={types}
+          onChange={onChangeType}
+          aria-label="type-selector"
+        >
+          <ToggleButton value="Roster" aria-label="Roster">Roster</ToggleButton>
+          <ToggleButton value="BN" aria-label="BN">BN</ToggleButton>
+          <ToggleButton value="IL" aria-label="IL">IL</ToggleButton>
+          <ToggleButton value="NA" aria-label="NA">NA</ToggleButton>
+        </ToggleButtonGroup>
+        <ToggleButtonGroup
+          value={compStatFormat}
+          exclusive
+          onChange={onChangeCompStatsFormat}
+          aria-label="comp-stats-format"
+        >
+          <ToggleButton value="value" aria-label="value">Value</ToggleButton>
+          <ToggleButton value="raw" aria-label="raw">Raw</ToggleButton>
+        </ToggleButtonGroup>
+      </Stack>
 
-        {this.state.fetching ?
-          <FetchingText /> :
-          <TableContainer component={Paper} sx={{ my: 2 }}>
-            <Table sx={{ minWidth: 700, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{minWidth: 70, maxWidth: 100}}> </TableCell>
-                  {this.dates.map(date => (
-                    <TableCell align="right" sx={{minWidth: 70}} key={date}>{date}</TableCell>
-                  ))}
-                  <TableCell sx={{minWidth: 70, maxWidth: 100}}>Total</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {this.statCate.map((stat) => (
-                  <TableRow
-                    key={stat.stat_id}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 }, bgcolor: stat.is_only_display_stat ? `background.paperDark` : null}}
-                  >
-                    <TableCell align="right" component="th" scope="row">
-                      {this.state.compositeStatFormat === "raw" && this.allStatCate.find(s => s.stat_id === stat.stat_id).is_composite_stat ? (
-                        <Tooltip title={composite_stats_formula(stat.stat_id)}>
-                          <Typography variant="span">{stat.display_name}</Typography>
-                        </Tooltip>
-                      ) : stat.display_name}
-                    </TableCell>
-                    {this.dates.map(date => (
-                      <TableCell align="right" key={date}>
-                        {isNaN(this.state.total[date][stat.stat_id]) ?
-                          this.state.total[date][stat.stat_id] || 'NaN' :
-                          Math.round(this.state.total[date][stat.stat_id]*100)/100
-                        }
-                      </TableCell>
-                    ))}
-                    <TableCell>
-                      {isNaN(this.state.weeklyStats[stat.stat_id]) ?
-                        this.state.weeklyStats[stat.stat_id] || 'NaN':
-                        Math.round(this.state.weeklyStats[stat.stat_id]*100)/100
+      {fetching ?
+        <FetchingText /> :
+        <TableContainer component={Paper} sx={{ my: 2 }}>
+          <Table sx={{ minWidth: 700, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{minWidth: 70, maxWidth: 100}}> </TableCell>
+                {dates.map(date => (
+                  <TableCell align="right" sx={{minWidth: 70}} key={date}>{date}</TableCell>
+                ))}
+                <TableCell sx={{minWidth: 70, maxWidth: 100}}>Total</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {statCate.map((stat) => (
+                <TableRow
+                  key={stat.stat_id}
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 }, bgcolor: stat.is_only_display_stat ? `background.paperDark` : null}}
+                >
+                  <TableCell align="right" component="th" scope="row">
+                    {compStatFormat === "raw" && statCateFull.find(s => s.stat_id === stat.stat_id).is_composite_stat ? (
+                      <Tooltip title={composite_stats_formula(stat.stat_id)}>
+                        <Typography variant="span">{stat.display_name}</Typography>
+                      </Tooltip>
+                    ) : stat.display_name}
+                  </TableCell>
+                  {dates.map(date => (
+                    <TableCell align="right" key={date}>
+                      {isNaN(dailyStats[date][stat.stat_id]) ?
+                        dailyStats[date][stat.stat_id] || 'NaN' :
+                        Math.round(dailyStats[date][stat.stat_id]*100)/100
                       }
                     </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        }
-      </Container>
-    )
-  }
+                  ))}
+                  <TableCell>
+                    {isNaN(weeklyStats[stat.stat_id]) ?
+                      weeklyStats[stat.stat_id] || 'NaN':
+                      Math.round(weeklyStats[stat.stat_id]*100)/100
+                    }
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      }
+    </Container>
+  )
 }
 
 export default TeamWeeklyStats;
