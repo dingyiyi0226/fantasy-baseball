@@ -14,11 +14,11 @@ import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 
-import FetchingText from './components/FetchingText.js';
-import { apis } from './utils/apis.js'
+import FetchingText from '../components/FetchingText.js';
+import { apis } from '../utils/apis.js';
 
 
-function LeagueTransaction(props) {
+function Transactions(props) {
 
   const [fetching, setFetching] = useState(true);
   const [week, setWeek] = useState(props.league.current_week);
@@ -167,4 +167,4 @@ function LeagueTransaction(props) {
   )
 }
 
-export default LeagueTransaction;
+export default Transactions;

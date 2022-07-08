@@ -1,13 +1,13 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Box from '@mui/material/Box';
 
-import AuthContext from './contexts/AuthContext.js'
-import Header from './Header.js'
-import  Login from './Login.js'
-import  LoginRedirect from './LoginRedirect.js'
-import Main from './Main.js'
+import AuthContext from './contexts/AuthContext.js';
+import Header from './containers/Header.js';
+import Login from './containers/Login.js';
+import LoginRedirect from './containers/LoginRedirect.js';
+import Main from './containers/Main.js';
 
 import { tokenExisted, clearToken } from './utils/auth.js';
 

@@ -8,12 +8,12 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
-import FetchingText from './components/FetchingText.js';
-import { apis } from './utils/apis.js';
-import { selectLeague, selectTeams, selectStatCate } from './metadataSlice.js';
+import FetchingText from '../../components/FetchingText.js';
+import { apis } from '../../utils/apis.js';
+import { selectLeague, selectTeams, selectStatCate } from '../metadataSlice.js';
 
 
-function TotalStats(props) {
+function WinLoss() {
 
   const teams = useSelector(state => selectTeams(state));
   const league = useSelector(state => selectLeague(state));
@@ -167,4 +167,4 @@ function TotalStats(props) {
   )
 }
 
-export default TotalStats;
+export default WinLoss;

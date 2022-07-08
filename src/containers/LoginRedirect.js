@@ -4,8 +4,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 
-import AuthContext from './contexts/AuthContext.js'
-import { getToken } from './utils/auth.js';
+import AuthContext from '../contexts/AuthContext.js'
+import { getToken } from '../utils/auth.js';
 
 
 function LoginRedirect(props) {

@@ -45,7 +45,7 @@ function Sidebar(props) {
 
           <ListItem disablePadding>
             <ListItemButton onClick={onClickStat}>
-              <ListItemText primary="League Stats" />
+              <ListItemText primary="Stats" />
               {openStat ? <ExpandLess /> : <ExpandMore />}
             </ListItemButton>
           </ListItem>
@@ -53,20 +53,26 @@ function Sidebar(props) {
           <Collapse in={openStat} timeout="auto" unmountOnExit>
             <List disablePadding>
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="league/daily" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to="stats/daily" sx={{ pl: 4 }}>
                   <ListItemText primary="Daily Stats" />
                 </ListItemButton>
               </ListItem>
 
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="league/weekly" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to="stats/weekly" sx={{ pl: 4 }}>
                   <ListItemText primary="Weekly Stats" />
                 </ListItemButton>
               </ListItem>
 
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="league/seasonal" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to="stats/seasonal" sx={{ pl: 4 }}>
                   <ListItemText primary="Seasonal Stats" />
+                </ListItemButton>
+              </ListItem>
+
+              <ListItem disablePadding>
+                <ListItemButton component={Link} to="stats/win-loss" sx={{ pl: 4 }}>
+                  <ListItemText primary="Win-Loss Stats" />
                 </ListItemButton>
               </ListItem>
             </List>
@@ -79,20 +85,14 @@ function Sidebar(props) {
           </ListItem>
 
           <ListItem disablePadding>
-            <ListItemButton component={Link} to="transaction">
+            <ListItemButton component={Link} to="transactions">
               <ListItemText primary="Transactions" />
             </ListItemButton>
           </ListItem>
 
           <ListItem disablePadding>
-            <ListItemButton component={Link} to="total">
-              <ListItemText primary="Total Result" />
-            </ListItemButton>
-          </ListItem>
-
-          <ListItem disablePadding>
             <ListItemButton onClick={onClickTeam}>
-              <ListItemText primary="Team Stats" />
+              <ListItemText primary="Teams" />
               {openTeam ? <ExpandLess /> : <ExpandMore />}
             </ListItemButton>
           </ListItem>
@@ -100,19 +100,19 @@ function Sidebar(props) {
           <Collapse in={openTeam} timeout="auto" unmountOnExit>
             <List disablePadding>
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="team/weekly" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to="teams/weekly" sx={{ pl: 4 }}>
                   <ListItemText primary="Weekly Stats" />
                 </ListItemButton>
               </ListItem>
 
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="team/seasonal" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to="teams/seasonal" sx={{ pl: 4 }}>
                   <ListItemText primary="Seasonal Stats" />
                 </ListItemButton>
               </ListItem>
 
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="team/matchups" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to="teams/matchups" sx={{ pl: 4 }}>
                   <ListItemText primary="Matchups" />
                 </ListItemButton>
               </ListItem>

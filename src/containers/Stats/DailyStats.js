@@ -14,11 +14,11 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import CircleIcon from '@mui/icons-material/Circle';
 
-import FetchingText from '../components/FetchingText.js';
-import { apis } from '../utils/apis.js';
+import FetchingText from '../../components/FetchingText.js';
+import { apis } from '../../utils/apis.js';
 
 
-function LeagueDailyStats(props) {
+function DailyStats(props) {
 
   const [fetching, setFetching] = useState(true);
   const [type, setType] = useState('value');  // 'value'|'rank'
@@ -410,4 +410,4 @@ function LeagueDailyStats(props) {
   )
 }
 
-export default LeagueDailyStats;
+export default DailyStats;

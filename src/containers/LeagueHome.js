@@ -8,7 +8,7 @@ import { List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { selectTeams } from './metadataSlice.js';
 
 
-function Home(props) {
+function LeagueHome(props) {
   const teams = useSelector(state => selectTeams(state));
 
   return (
@@ -27,4 +27,4 @@ function Home(props) {
   )
 }
 
-export default Home;
+export default LeagueHome;

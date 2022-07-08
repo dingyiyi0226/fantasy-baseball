@@ -5,7 +5,7 @@ import TeamSeasonalStats from './TeamSeasonalStats.js';
 import TeamWeeklyStats from './TeamWeeklyStats.js';
 import TeamMatchups from './TeamMatchups.js';
 
-function TeamStats(props) {
+function Teams(props) {
   return (
     <Routes>
       <Route index element=<Navigate to="weekly" replace={true} />/>
@@ -16,4 +16,4 @@ function TeamStats(props) {
   )
 }
 
-export default TeamStats;
+export default Teams;

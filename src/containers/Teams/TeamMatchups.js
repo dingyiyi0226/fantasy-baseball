@@ -9,8 +9,8 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 
-import FetchingText from '../components/FetchingText.js';
-import { apis } from '../utils/apis.js';
+import FetchingText from '../../components/FetchingText.js';
+import { apis } from '../../utils/apis.js';
 
 
 function TeamMatchups(props) {

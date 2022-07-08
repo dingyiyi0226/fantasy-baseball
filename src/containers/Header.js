@@ -9,9 +9,9 @@ import Link from '@mui/material/Link';
 import IconButton from '@mui/material/IconButton';
 import GitHubIcon from '@mui/icons-material/GitHub';
 
-import AuthContext from './contexts/AuthContext.js';
+import AuthContext from '../contexts/AuthContext.js';
 
-export default function Header() {
+function Header() {
   const {isLogin, setLogin} = useContext(AuthContext);
   let navigate = useNavigate();
 
@@ -47,3 +47,6 @@ export default function Header() {
     </AppBar>
   );
 }
+
+export default Header;
+

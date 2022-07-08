@@ -14,9 +14,9 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
-import FetchingText from '../components/FetchingText.js';
-import { apis } from '../utils/apis.js';
-import { composite_stats, composite_stats_formula } from '../utils/composite_stats.js';
+import FetchingText from '../../components/FetchingText.js';
+import { apis } from '../../utils/apis.js';
+import { composite_stats, composite_stats_formula } from '../../utils/composite_stats.js';
 import { selectLeague, selectTeams, selectStatCate, selectStatCateFull, selectGameWeeks } from '../metadataSlice.js';
 
 

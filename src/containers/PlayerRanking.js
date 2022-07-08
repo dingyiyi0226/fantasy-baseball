@@ -10,11 +10,11 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
-import FetchingText from './components/FetchingText.js';
-import { apis } from './utils/apis.js'
+import FetchingText from '../components/FetchingText.js';
+import { apis } from '../utils/apis.js';
 
 
-function LeaguePlayerRanking(props) {
+function PlayerRanking(props) {
 
   const [fetching, setFetching] = useState(true);
   const [playerNum, setPlayerNum] = useState(50);
@@ -141,4 +141,4 @@ function LeaguePlayerRanking(props) {
   )
 }
 
-export default LeaguePlayerRanking;
+export default PlayerRanking;
