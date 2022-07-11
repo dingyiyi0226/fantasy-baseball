@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 
+import { to_local_date } from '../../utils/timezone.js';
 import FetchingText from '../../components/FetchingText.js';
 import { selectGameWeeks, selectLeague, selectTeams } from '../metadataSlice.js';
 import { fetchTransactions, selectTransactions, isLoading } from './transactionsSlice.js';
@@ -50,7 +51,9 @@ function Transactions(props) {
     else {
       gameWeek = gameWeeks.find(w => w.week === week);
       start = new Date(gameWeek.start.split('-')[0], gameWeek.start.split('-')[1]-1, gameWeek.start.split('-')[2]);
-      end = new Date(gameWeek.end.split('-')[0], gameWeek.end.split('-')[1]-1, gameWeek.end.split('-')[2]);
+      end = new Date(gameWeek.end.split('-')[0], gameWeek.end.split('-')[1]-1, parseInt(gameWeek.end.split('-')[2])+1); // next week's start
+      start = to_local_date(start);
+      end = to_local_date(end);
     }
 
     Object.keys(transactions).forEach(team => {

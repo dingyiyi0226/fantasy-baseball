@@ -15,6 +15,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import CircleIcon from '@mui/icons-material/Circle';
 
+import { to_fantasy_date } from '../../utils/timezone.js';
 import FetchingText from '../../components/FetchingText.js';
 import { selectLeague, selectGameWeeks, selectTeams, selectStatCate } from '../metadataSlice.js';
 import { fetchMatchupsByWeek, fetchStatsByDate, selectMatchups, selectDailyStats, dailyIsLoading as isLoading } from './statsSlice.js';
@@ -53,7 +54,7 @@ function DailyStats() {
     let date = searchParams.get('date');
     if (!date) {
       let today = new Date();
-      today.setMinutes(today.getMinutes() + today.getTimezoneOffset() - 420); // set today to 'America/Los_Angeles' (UTC-7)
+      today = to_fantasy_date(today);
       date = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     }
     if (!dates.includes(date)){
