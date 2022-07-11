@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
@@ -10,54 +11,29 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
-import FetchingText from '../components/FetchingText.js';
-import { apis } from '../utils/apis.js';
-
+import FetchingText from '../../components/FetchingText.js';
+import { selectTeams } from '../metadataSlice.js';
+import { fetchPlayerRanking, selectPlayerRanking, isLoading } from './playerRankingSlice.js';
 
 function PlayerRanking(props) {
+  const dispatch = useDispatch();
+  const teams = useSelector(state => selectTeams(state));
 
-  const [fetching, setFetching] = useState(true);
+  const fetching = useSelector(state => isLoading(state));
+  const players = useSelector(state => selectPlayerRanking(state)); // {<rank>: player}
+
   const [playerNum, setPlayerNum] = useState(50);
-  const [players, setPlayers] = useState({});  // {[rank]: player}
-
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const batch = genBatch(playerNum);
-      const players = {};
-      await Promise.all(batch.map(async (b) => {
-        const results = await apis.getPlayersByActualRanking(b.start, b.count);
-        results.forEach((player, idx) => {
-          players[b.start+idx+1] = player;
-        })
-      }))
-
-      setPlayers(players);
-      setFetching(false);
-    }
-
-    const genBatch = (playerNum) => {
-      const full = Math.floor(playerNum/25);
-      const last = playerNum%25;
-      const batch = [];
-
-      for (let i=0;i<full;i++) {
-        batch.push({start: i*25, count: 25});
-      }
-      if (last > 0) {
-        batch.push({start: full*25, count: last});
-      }
-
-      return batch;
-    }
-
-    fetchStats();
-  }, [playerNum]);
+    dispatch(fetchPlayerRanking(playerNum));
+  }, [dispatch, playerNum])
 
   const teamPlayers = useMemo(() => {
     // {[team]: {[rank]: player}}
 
-    const teams = props.league.teams.team;
+    if (fetching){
+      return undefined;
+    }
     const result = {};
     teams.forEach(team => {
       result[team.team_id] = {};
@@ -70,15 +46,13 @@ function PlayerRanking(props) {
     })
 
     return result;
-  }, [players, props.league])
+  }, [fetching, players, teams])
 
 
   const onSelectPlayerNum = (e) => {
-    setFetching(true);
     setPlayerNum(e.target.value);
   }
 
-  const teams = props.league.teams.team;
 
   return (
     <Container>

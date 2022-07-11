@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
@@ -14,48 +15,40 @@ import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 
-import FetchingText from '../components/FetchingText.js';
-import { apis } from '../utils/apis.js';
+import FetchingText from '../../components/FetchingText.js';
+import { selectGameWeeks, selectLeague, selectTeams } from '../metadataSlice.js';
+import { fetchTransactions, selectTransactions, isLoading } from './transactionsSlice.js';
 
 
 function Transactions(props) {
+  const dispatch = useDispatch();
+  const gameWeeks = useSelector(state => selectGameWeeks(state));
+  const league = useSelector(state => selectLeague(state));
+  const teams = useSelector(state => selectTeams(state));
 
-  const [fetching, setFetching] = useState(true);
-  const [week, setWeek] = useState(props.league.current_week);
-  const [transactions, setTransactions] = useState({});  // {[team]: transactions}
+  const fetching = useSelector(state => isLoading(state));
+  const transactions = useSelector(state => selectTransactions(state));  // {[team]: transactions}
 
+  const [week, setWeek] = useState(league.current_week);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const teams = props.league.teams.team;
-      const transactions = {};
-      await Promise.all(teams.map(async (team) => {
-        const results = await apis.getTransactionsByTeam(team.team_id);
-        transactions[team.team_id] = results || [];
-      }))
-
-      setTransactions(transactions);
-      setFetching(false);
-    }
-
-
-    fetchStats();
-  }, [props.league]);
+    dispatch(fetchTransactions(teams.map(t => t.team_id)));
+  }, [teams, dispatch])
 
   const weekTransactions = useMemo(() => {
     // {[team]: transactions}
 
-    if (Object.keys(transactions).length === 0) {
-      return {};
+    if (fetching) {
+      return undefined;
     }
 
     const result = {};
     let gameWeek, start, end;
     if (week === 0) { // preseason
-      end = new Date(props.league.start_date.split('-')[0], props.league.start_date.split('-')[1]-1, props.league.start_date.split('-')[2]);
+      end = new Date(league.start_date.split('-')[0], league.start_date.split('-')[1]-1, league.start_date.split('-')[2]);
     }
     else {
-      gameWeek = props.game.game_weeks.game_week.find(w => w.week === week);
+      gameWeek = gameWeeks.find(w => w.week === week);
       start = new Date(gameWeek.start.split('-')[0], gameWeek.start.split('-')[1]-1, gameWeek.start.split('-')[2]);
       end = new Date(gameWeek.end.split('-')[0], gameWeek.end.split('-')[1]-1, gameWeek.end.split('-')[2]);
     }
@@ -77,7 +70,7 @@ function Transactions(props) {
     })
 
     return result;
-  }, [transactions, week, props.game, props.league])
+  }, [fetching, transactions, week, gameWeeks, league])
 
   const dateString = (timestamp) => {
     const date = new Date(timestamp*1000);
@@ -87,9 +80,6 @@ function Transactions(props) {
   const onSelectWeek = (e) => {
     setWeek(e.target.value);
   }
-
-  const league = props.league;
-  const teams = props.league.teams.team;
 
   return (
     <Container>

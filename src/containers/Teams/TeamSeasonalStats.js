@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
@@ -11,50 +12,46 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 
 import FetchingText from '../../components/FetchingText.js';
-import { apis } from '../../utils/apis.js';
 import { selectLeague, selectTeams, selectStatCate, selectGameWeeks } from '../metadataSlice.js';
+import { fetchSeasonalStats, selectSeasonalStats, selectWeeklyStats, seasonalStatsIsLoading as isLoading } from './teamsSlice.js';
 
 function TeamSeasonalStats(props) {
+  const { team } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const teams = useSelector(state => selectTeams(state));
   const league = useSelector(state => selectLeague(state));
   const statCate = useSelector(state => selectStatCate(state));
   const gameWeeks = useSelector(state => selectGameWeeks(state));
 
-  const [fetching, setFetching] = useState(true);
-  const [team, setTeam] = useState(1);
-  const [stats, setStats] = useState({});
-  const [seasonalStats, setSeasonalStats] = useState({});
+  const fetching = useSelector(state => isLoading(state));
+  const weeklyStats = useSelector(state => selectWeeklyStats(state));
+  const seasonalStats = useSelector(state => selectSeasonalStats(state));
 
   const weeks = useMemo(() =>
     [...Array(league.current_week-league.start_week+1).keys()].map(i => i+league.start_week)
   , [league])
 
   useEffect(() => {
-    const getTeamStats = async () => {
-      let stats = {};
-      const fetchWeeklyStats = async () => {
-        await Promise.all(weeks.map(async (week) => {
-          const stat = await apis.getTeamStatsByWeek(team, week);
-          stats[week] = stat;
-        }))
-      }
-      const [seasonalStats] = await Promise.all([apis.getTeamStatsBySeason(team), fetchWeeklyStats()])
-
-      setStats(stats);
-      setSeasonalStats(seasonalStats);
-      setFetching(false);
+    if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
+      navigate('/teams/1/seasonal');
     }
-    getTeamStats();
-  }, [team, weeks])
+  }, [team, teams, navigate])
+
+  useEffect(() => {
+    if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
+      return;
+    }
+
+    dispatch(fetchSeasonalStats({team: team, weeks: weeks}));
+  }, [team, teams, weeks, dispatch])
 
   const onSelectTeam = (e) => {
     if (fetching) {
       return
     }
-
-    setFetching(true);
-    setTeam(e.target.value);
+    navigate(`/teams/${e.target.value}/seasonal`);
   }
 
   return (
@@ -68,8 +65,8 @@ function TeamSeasonalStats(props) {
             value={team}
             onChange={onSelectTeam}
           >
-            {teams.map(team => (
-              <MenuItem value={team.team_id} key={team.team_id}>{team.name}</MenuItem>
+            {teams.map(t => (
+              <MenuItem value={t.team_id} key={t.team_id}>{t.name}</MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -109,7 +106,7 @@ function TeamSeasonalStats(props) {
                   </TableCell>
                   {weeks.map(week => (
                     <TableCell align="right" key={week}>
-                      {stats[week].find(s => s.stat_id === Number(stat.stat_id)).value}
+                      {weeklyStats[week].find(s => s.stat_id === Number(stat.stat_id)).value}
                     </TableCell>
                   ))}
                   <TableCell>

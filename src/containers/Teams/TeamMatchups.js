@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
@@ -10,29 +12,36 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 
 import FetchingText from '../../components/FetchingText.js';
-import { apis } from '../../utils/apis.js';
+import { selectTeams } from '../metadataSlice.js';
+import { fetchMatchups, selectMatchups, matchupsIsLoading as isLoading } from './teamsSlice.js';
 
 
 function TeamMatchups(props) {
-  const [team, setTeam] = useState(1);
-  const [matchups, setMatchups] = useState([]);
-  const [fetching, setFetching] = useState(true);
+  const { team } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
-  const teams = props.league.teams.team;
+  const teams = useSelector(state => selectTeams(state));
+  const fetching = useSelector(state => isLoading(state));
+  const matchups = useSelector(state => selectMatchups(state));
+
+  useEffect(() => {
+    if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
+      navigate('/teams/1/matchups');
+    }
+  }, [team, teams, navigate])
 
 
   useEffect(() => {
-    const fetchMatchups = async () => {
-      const matchupsRaw = await apis.getTeamMatchupsUntilWeek(team);
-      setMatchups(matchupsRaw);
-      setFetching(false);
+    if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
+      return;
     }
 
-    fetchMatchups();
-  }, [team])
+    dispatch(fetchMatchups(team));
+  }, [team, teams, dispatch])
 
   const getOpponent = (matchup, field='team_id') => {
-    const opponent = matchup.teams.team.find(t => t.team_id !== team);
+    const opponent = matchup.teams.team.find(t => t.team_id !== parseInt(team));
     return opponent[field];
   }
 
@@ -41,7 +50,7 @@ function TeamMatchups(props) {
       return undefined;
     }
 
-    const myTeamKey = teams.find(t => t.team_id === team).team_key;
+    const myTeamKey = teams.find(t => t.team_id === parseInt(team)).team_key;
     if (matchup.is_tied) {
       return 'T';
     } else if (matchup.winner_team_key === myTeamKey) {
@@ -56,7 +65,7 @@ function TeamMatchups(props) {
       return undefined;
     }
 
-    const myTeamKey = teams.find(t => t.team_id === team).team_key;
+    const myTeamKey = teams.find(t => t.team_id === parseInt(team)).team_key;
     let result = {'win': 0, 'lose': 0, 'tie': 0};
     matchup.stat_winners.stat_winner.forEach(stat => {
       if (stat.is_tied) {
@@ -74,8 +83,7 @@ function TeamMatchups(props) {
     if (fetching) {
       return;
     }
-    setTeam(e.target.value);
-    setFetching(true);
+    navigate(`/teams/${e.target.value}/matchups`);
   }
 
   return (

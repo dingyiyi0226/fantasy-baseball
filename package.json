@@ -30,7 +30,8 @@
     "token": "node api_test/api_token.js",
     "api": "node api_test/api_test.js",
     "predeploy": "yarn build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "backend": "cd ../fantasy-baseball-backend && yarn start"
   },
   "eslintConfig": {
     "extends": [

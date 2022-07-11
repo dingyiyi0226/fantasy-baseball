@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
@@ -15,12 +16,14 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import FetchingText from '../../components/FetchingText.js';
-import { apis } from '../../utils/apis.js';
 import { composite_stats, composite_stats_formula } from '../../utils/composite_stats.js';
 import { selectLeague, selectTeams, selectStatCate, selectStatCateFull, selectGameWeeks } from '../metadataSlice.js';
-
+import { fetchDailyStats, selectDailyStats, selectDailyRoster, dailyStatsIsLoading as isLoading } from './teamsSlice.js';
 
 function TeamWeeklyStats(props) {
+  const { team } = useParams();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const teams = useSelector(state => selectTeams(state));
   const league = useSelector(state => selectLeague(state));
@@ -28,13 +31,13 @@ function TeamWeeklyStats(props) {
   const statCateFull = useSelector(state => selectStatCateFull(state));
   const gameWeeks = useSelector(state => selectGameWeeks(state));
 
-  const [fetching, setFetching] = useState(true);
-  const [team, setTeam] = useState(1);
+  const fetching = useSelector(state => isLoading(state));
+  const dailyStatsRaw = useSelector(state => selectDailyStats(state));  // {[date]: [player_stats,]}
+  const dailyRoster = useSelector(state => selectDailyRoster(state));   // {[date]: [player,]}
+
   const [week, setWeek] = useState(league.current_week);
   const [types, setTypes] = useState(['Roster']);  // 'Roster', 'BN', 'IL', 'NA'
   const [compStatFormat, setCompStatFormat] = useState('value');  // 'value', 'raw'
-  const [stats, setStats] = useState({});      // {[date]: [player_stats,]}
-  const [rosters, setRosters] = useState({});  // {[date]: [player,]}
 
   const dates = useMemo(() => {
     const dates = []
@@ -48,45 +51,30 @@ function TeamWeeklyStats(props) {
   }, [week, gameWeeks])
 
   useEffect(() => {
-    const getTeamStats = async () => {
-      let stats = {};
-      let rosters = {};
-
-      await Promise.all(dates.map(async (date) => {
-        const roster = await apis.getTeamRosterByDate(team, date);
-        let stat;
-        if (roster.length > 25) {
-          const [stat1, stat2] =  await Promise.all([
-            apis.getPlayerAllStatsByDate(roster.slice(0, 25).map(p => p.player_key), date),
-            apis.getPlayerAllStatsByDate(roster.slice(25).map(p => p.player_key), date)
-          ]);
-          stat = stat1.concat(stat2);
-        }
-        else {
-          stat = await apis.getPlayerAllStatsByDate(roster.map(p => p.player_key), date);
-        }
-
-        stats[date] = stat;
-        rosters[date] = roster;
-      }))
-      setStats(stats);
-      setRosters(rosters);
-      setFetching(false);
+    if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
+      navigate('/teams/1/weekly');
     }
-    getTeamStats();
-  }, [team, dates])
+  }, [team, teams, navigate])
+
+  useEffect(() => {
+    if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
+      return;
+    }
+
+    dispatch(fetchDailyStats({team: team, dates: dates}));
+  }, [team, teams, dates, dispatch])
 
   const dailyStats = useMemo(() => {  // {[date]: {[stat_id]: value}}
-    if (Object.keys(stats).length === 0 || Object.keys(rosters).length === 0) {
-      return {};
+    if (fetching) {
+      return undefined;
     }
     let totalStats = {};
 
-    Object.keys(stats).forEach(date => {
+    Object.keys(dailyStatsRaw).forEach(date => {
       let dailyTotal = {};
       let statFull;
 
-      const roster = rosters[date].filter(player => {
+      const roster = dailyRoster[date].filter(player => {
         if (types.includes(player.selected_position.position)){
           return true;
         }
@@ -98,7 +86,7 @@ function TeamWeeklyStats(props) {
         }
       }).map(player => player.player_key);
 
-      const dailyStats = stats[date].filter(stat => roster.includes(stat.player_key));
+      const dailyStats = dailyStatsRaw[date].filter(stat => roster.includes(stat.player_key));
 
       statCate.forEach(stat => {
         statFull = statCateFull.find(s => s.stat_id === stat.stat_id);
@@ -129,9 +117,12 @@ function TeamWeeklyStats(props) {
 
     return totalStats;
 
-  }, [stats, rosters, types, compStatFormat, statCate, statCateFull])
+  }, [fetching, dailyStatsRaw, dailyRoster, types, compStatFormat, statCate, statCateFull])
 
   const weeklyStats = useMemo(() => {  // {[stat_id]: value}
+    if (dailyStats === undefined) {
+      return undefined;
+    }
     let weeklyStats = {};
     let statFull;
 
@@ -164,8 +155,7 @@ function TeamWeeklyStats(props) {
     if (fetching) {
       return
     }
-    setTeam(e.target.value);
-    setFetching(true);
+    navigate(`/teams/${e.target.value}/weekly`);
   }
 
   const onSelectWeek = (e) => {
@@ -173,7 +163,6 @@ function TeamWeeklyStats(props) {
       return
     }
     setWeek(e.target.value);
-    setFetching(true);
   }
 
   const onChangeType = (e, types) => {
@@ -195,8 +184,8 @@ function TeamWeeklyStats(props) {
             value={team}
             onChange={onSelectTeam}
           >
-            {teams.map(team => (
-              <MenuItem value={team.team_id} key={team.team_id}>{team.name}</MenuItem>
+            {teams.map(t => (
+              <MenuItem value={t.team_id} key={t.team_id}>{t.name}</MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -260,7 +249,7 @@ function TeamWeeklyStats(props) {
                       </Tooltip>
                     ) : stat.display_name}
                   </TableCell>
-                  {dates.map(date => (
+                  {Object.keys(dailyStats).map(date => (
                     <TableCell align="right" key={date}>
                       {isNaN(dailyStats[date][stat.stat_id]) ?
                         dailyStats[date][stat.stat_id] || 'NaN' :

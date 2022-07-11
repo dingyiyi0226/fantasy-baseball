@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 
 import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
@@ -15,27 +16,30 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import CircleIcon from '@mui/icons-material/Circle';
 
 import FetchingText from '../../components/FetchingText.js';
-import { apis } from '../../utils/apis.js';
+import { selectLeague, selectGameWeeks, selectTeams, selectStatCate } from '../metadataSlice.js';
+import { fetchMatchupsByWeek, fetchStatsByDate, selectMatchups, selectDailyStats, dailyIsLoading as isLoading } from './statsSlice.js';
+import { statsPreprocessing, statsH2H, statsRankAvg, statsH2HSum } from './statsHelper.js';
 
+function DailyStats() {
+  const dispatch = useDispatch();
+  const teams = useSelector(state => selectTeams(state));
+  const league = useSelector(state => selectLeague(state));
+  const statCate = useSelector(state => selectStatCate(state));
+  const gameWeeks = useSelector(state => selectGameWeeks(state));
 
-function DailyStats(props) {
+  const fetching = useSelector(state => isLoading(state));
+  const matchups = useSelector(state => selectMatchups(state));
+  const dailyStatsRaw = useSelector(state => selectDailyStats(state));
 
-  const [fetching, setFetching] = useState(true);
+  const [week, setWeek] = useState(league.current_week);
   const [type, setType] = useState('value');  // 'value'|'rank'
-  const [stats, setStats] = useState({});  // {<team_id>: [{stat_id:, value:, rank:}, ]}
-  const [h2h, setH2H] = useState({});      // {<team_id>: {<opteam_id>: {win: [], lose: [], status: 'win'|'lose'|'tie' }}}
-
-  const [opponent, setOpponent] = useState({});
-  const [matchupPair, setMatchupPair] = useState({});
-  const [week, setWeek] = useState(props.league.current_week);
   const [selectedTeam, setSelectedTeam] = useState(undefined);
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-
   const dates = useMemo(() => {
     const dates = []
-    const gameWeek = props.game.game_weeks.game_week.find(w => w.week === week);
+    const gameWeek = gameWeeks.find(w => w.week === week);
 
     const start = new Date(gameWeek.start.split('-')[0], gameWeek.start.split('-')[1]-1, gameWeek.start.split('-')[2]);
     const end = new Date(gameWeek.end.split('-')[0], gameWeek.end.split('-')[1]-1, gameWeek.end.split('-')[2]);
@@ -43,179 +47,84 @@ function DailyStats(props) {
       dates.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
     }
     return dates;
-  }, [week, props.game]);
+  }, [week, gameWeeks]);
 
   useEffect(() => {
-    const teams = props.league.teams.team;
-    const statCate = props.league.settings.stat_categories.stats.stat;
-    const statCateKey = statCate.reduce((pv, v) => ({...pv, [v.stat_id]: v}), {});
     let date = searchParams.get('date');
     if (!date) {
       let today = new Date();
       today.setMinutes(today.getMinutes() + today.getTimezoneOffset() - 420); // set today to 'America/Los_Angeles' (UTC-7)
-      setSearchParams({date: `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`});
-      return;
+      date = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
     }
-
     if (!dates.includes(date)){
       date = dates[0];
+    }
+    if (date !== searchParams.get('date')) {
       setSearchParams({date: date});
       return;
     }
 
-    const fetchStats = async (date) => {
-      await getTeamsStatsByDate(date);
-      setFetching(false);
-    }
-
-    const getTeamsStatsByDate = async (date) => {
-
-      let teamsStats = {}
-      const teamsStatsRaw = await apis.getTeamsStatsByDate(teams.length, date)
-      teamsStatsRaw.forEach(team => {
-        teamsStats[team.team_id] = team.team_stats.stats.stat;
-      })
-
-      Object.keys(teamsStats).forEach(team_id => {
-        teamsStats[team_id].forEach((stat, i) => {
-          if (stat.value === 'INF') {
-            teamsStats[team_id][i].value = Infinity;
-          }
-        })
-      })
-
-      calulateRank(teamsStats);
-      let h2h = calculateH2H(teamsStats);
-      setStats(teamsStats);
-      setH2H(h2h);
-    }
-
-    const calulateRank = (teamsStats) => {
-
-      let statsT = {}
-      statCate.forEach(s => {
-        statsT[s.stat_id] = []
-      })
-
-      Object.values(teamsStats).forEach(stats => {
-        stats.forEach(s => {
-          statsT[s.stat_id].push(s.value)
-        })
-      })
-
-      for (let [stat_id, stat] of Object.entries(statsT)){
-        const sort_order = statCateKey[stat_id].sort_order === 0;
-        stat.sort((a, b) => sort_order ? a-b : b-a)
-      }
-
-      Object.values(teamsStats).forEach(stats => {
-        stats.forEach(stat => {
-          if(statCateKey[stat.stat_id].is_only_display_stat) {
-            stat.rank = undefined;
-          }
-          else {
-            stat.rank = statsT[stat.stat_id].indexOf(stat.value) + 1;
-          }
-        })
-      })
-    }
-
-    const calculateH2H = (teamsStats) => {
-      let h2h = {};
-      let ranks = {};
-      teams.forEach(team => {
-        ranks[team.team_id] = teamsStats[team.team_id].reduce((pv, v) => ({...pv, [v.stat_id]: v.rank}), {});
-      })
-
-      teams.forEach(team => {
-        h2h[team.team_id] = {};
-
-        Object.keys(teamsStats).filter(team_id => Number(team_id) !== team.team_id).forEach(team_id => {
-          let win = [];
-          let lose = [];
-          statCate.filter(s => !s.is_only_display_stat).forEach(s => {
-            if (ranks[team.team_id][s.stat_id] < ranks[team_id][s.stat_id]) {
-              win.push(s.stat_id);
-            }
-            else if (ranks[team.team_id][s.stat_id] > ranks[team_id][s.stat_id]) {
-              lose.push(s.stat_id);
-            }
-          })
-          let status;
-          if (win.length > lose.length) {
-            status = 'win';
-          } else if (win.length < lose.length) {
-            status = 'lose';
-          } else {
-            status = 'tie';
-          }
-          let result = {
-            win: win,
-            lose: lose,
-            status: status
-          };
-          h2h[team.team_id][team_id] = result;
-        })
-      })
-      return h2h;
-    }
-
-    fetchStats(date);
-  }, [props.league, searchParams, setSearchParams, dates])
+    dispatch(fetchStatsByDate({teamNum: teams.length, date: date}));
+  }, [dispatch, searchParams, setSearchParams, teams, dates])
 
   useEffect(() => {
-    const fetchStats = async (week) => {
-      await getMatchupsByWeek(week);
+    dispatch(fetchMatchupsByWeek(week));
+  }, [week, dispatch])
+
+
+  const dailyStats = useMemo(() => {  // {<team_id>: [{stat_id:, value:, rank:}, ]}
+    if (fetching) {
+      return undefined;
     }
+    return statsPreprocessing(dailyStatsRaw, statCate);
+  }, [fetching, dailyStatsRaw, statCate])
 
-    const getMatchupsByWeek = async (week) => {
-      let matchups = await apis.getMatchupsByWeek(week)
-      let opponent = {};
-      let matchupPair = {}
-      matchups.forEach((matchup, i) => {
-        matchupPair[matchup.teams.team[0].team_id] = i;
-        matchupPair[matchup.teams.team[1].team_id] = i;
-        opponent[matchup.teams.team[0].team_id] = matchup.teams.team[1].team_id;
-        opponent[matchup.teams.team[1].team_id] = matchup.teams.team[0].team_id;
-      })
-      setOpponent(opponent);
-      setMatchupPair(matchupPair);
+  const h2h = useMemo(() => {
+    if (dailyStats === undefined) {
+      return undefined;
     }
+    return statsH2H(dailyStats, statCate, teams);
+  }, [dailyStats, statCate, teams])
 
-    fetchStats(week);
-  }, [week])
+  const rankAvg = useMemo(() => {
+    if (dailyStats === undefined) {
+      return undefined;
+    }
+    return statsRankAvg(dailyStats);
+  }, [dailyStats])
+
+  const h2hSum = useMemo(() => {
+    if (h2h === undefined) {
+      return undefined;
+    }
+    return statsH2HSum(h2h);
+  }, [h2h])
 
 
-  const TeamH2HSumStr = (teamH2H) => {
-    let win = 0;
-    let lose = 0;
-    let tie = 0;
-    Object.values(teamH2H).forEach(opTeam => {
-      if (opTeam.status === 'win') {
-        win += 1;
-      } else if (opTeam.status === 'lose') {
-        lose += 1;
-      } else {
-        tie += 1;
-      }
+  const matchupPair = useMemo(() => {
+    if (matchups === undefined) {
+      return {};
+    }
+    let matchupPair = {};
+    matchups.forEach((matchup, i) => {
+      matchupPair[matchup.teams.team[0].team_id] = i;
+      matchupPair[matchup.teams.team[1].team_id] = i;
     })
-    return `${win}-${lose}-${tie}`;
-  }
+    return matchupPair;
+  }, [matchups])
 
-  const getRankAvg = (team) => {
-    if (stats[team]) {
-      const ranks = [];
-      Object.values(stats[team]).forEach(s => {
-        if (s.rank !== undefined){
-          ranks.push(s.rank);
-        }
-      })
-      return (ranks.reduce((pv, v) => pv+v, 0) / ranks.length).toFixed(2);
+  const opponent = useMemo(() => {
+    if (matchups === undefined) {
+      return {};
     }
-    else {
-      return null;
-    }
-  }
+    let opponent = {};
+    matchups.forEach((matchup, i) => {
+      opponent[matchup.teams.team[0].team_id] = matchup.teams.team[1].team_id;
+      opponent[matchup.teams.team[1].team_id] = matchup.teams.team[0].team_id;
+    })
+    return opponent;
+  }, [matchups])
+
 
   const onSelectWeek = (e) => {
     setWeek(e.target.value);
@@ -226,7 +135,6 @@ function DailyStats(props) {
       return;
     }
     setSearchParams({date: e.target.value});
-    setFetching(true);
   }
 
   const onSelectType = (e) => {
@@ -240,10 +148,6 @@ function DailyStats(props) {
   const onMouseLeaveTeam = (e) => {
     setSelectedTeam(undefined);
   }
-
-  const league = props.league;
-  const teams = props.league.teams.team;
-  const statCate = props.league.settings.stat_categories.stats.stat;
 
   return (
     <Container>
@@ -313,16 +217,16 @@ function DailyStats(props) {
                         {stat.display_name}
                       </TableCell>
                       {type === 'value' ?
-                        Object.keys(stats).map((teamID) => (
+                        Object.keys(dailyStats).map((teamID) => (
                         <TableCell align="right" key={teamID}
                           sx={{bgcolor: (selectedTeam && matchupPair[selectedTeam] === matchupPair[teamID] && h2h[teamID][opponent[teamID]].win.includes(stat.stat_id)) ? 'background.paperDark' : null}}>
-                          {stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).value}
+                          {dailyStats[teamID].find(s => s.stat_id === Number(stat.stat_id)).value}
                         </TableCell>
                         )) :
-                        Object.keys(stats).map((teamID) => (
+                        Object.keys(dailyStats).map((teamID) => (
                         <TableCell align="right" key={teamID}
                           sx={{bgcolor: (selectedTeam && matchupPair[selectedTeam] === matchupPair[teamID] && h2h[teamID][opponent[teamID]].win.includes(stat.stat_id)) ? 'background.paperDark' : null}}>
-                          {stats[teamID].find(s => s.stat_id === Number(stat.stat_id)).rank}
+                          {dailyStats[teamID].find(s => s.stat_id === Number(stat.stat_id)).rank}
                         </TableCell>
                         ))
                       }
@@ -336,7 +240,7 @@ function DailyStats(props) {
                     </TableCell>
                     {teams.map(team =>
                       <TableCell align="right" key={team.team_id}>
-                        {getRankAvg(team.team_id)}
+                        {rankAvg[team.team_id]}
                       </TableCell>
                     )}
                   </TableRow>
@@ -395,7 +299,7 @@ function DailyStats(props) {
                     <TableCell align="right" component="th" scope="row">W-L-T</TableCell>
                     {teams.map((team) => (
                       <TableCell align="right" key={team.team_id}>
-                        {TeamH2HSumStr(h2h[team.team_id])}
+                        {`${h2hSum[team.team_id].win}-${h2hSum[team.team_id].lose}-${h2hSum[team.team_id].tie}`}
                       </TableCell>
                     ))}
                   </TableRow>
@@ -403,7 +307,6 @@ function DailyStats(props) {
               </Table>
             </TableContainer>
           </React.Fragment>
-
         )
       }
     </Container>

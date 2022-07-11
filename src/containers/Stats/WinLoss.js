@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 import Container from '@mui/material/Container';
 import Paper from '@mui/material/Paper';
@@ -9,58 +9,59 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import FetchingText from '../../components/FetchingText.js';
-import { apis } from '../../utils/apis.js';
 import { selectLeague, selectTeams, selectStatCate } from '../metadataSlice.js';
+import { fetchMatchupsUntilWeek, selectAllMatchups, allMatchupsIsLoading as isLoading } from './statsSlice.js';
 
 
 function WinLoss() {
-
+  const dispatch = useDispatch();
   const teams = useSelector(state => selectTeams(state));
   const league = useSelector(state => selectLeague(state));
   const statCate = useSelector(state => selectStatCate(state)).filter(s => !s.is_only_display_stat);
 
-  const [fetching, setFetching] = useState(true);
-  const [stats, setStats] = useState({});
+  const fetching = useSelector(state => isLoading(state));
+  const allMatchupsRaw = useSelector(state => selectAllMatchups(state));  // {<team_id>: []}
+
   const [statTypes, setStatTypes] = useState(['B', 'P']);  // B: batting, P: pitching
 
   useEffect(() => {
-    const getMatchupsUntilWeek = async () => {
-      let allStats = {};
-      teams.forEach(team => {
-        allStats[team.team_id] = {};
-      })
-      statCate.forEach(s => {
-        Object.keys(allStats).forEach(key => {
-          allStats[key][s.stat_id] = {'win': 0, 'lose': 0, 'tie': 0};
-        })
-      })
-      let allMatchups = {};
-      await Promise.all(teams.map(async (team) => {
-        const matchup = await apis.getTeamMatchupsUntilWeek(team.team_id, league.current_week-1);
-        allMatchups[team.team_id] = matchup;
-      }))
+    dispatch(fetchMatchupsUntilWeek({teamIDs: teams.map(t => t.team_id), week: league.current_week-1}));
+  }, [teams, league, dispatch])
 
-      teams.forEach(team => {
-        allMatchups[team.team_id].forEach(week => {
-          week.stat_winners.stat_winner.forEach(stat_winner => {
-            if (stat_winner.is_tied) {
-              allStats[team.team_id][stat_winner.stat_id].tie += 1;
-            } else if (stat_winner.winner_team_key === team.team_key) {
-              allStats[team.team_id][stat_winner.stat_id].win += 1;
-            } else {
-              allStats[team.team_id][stat_winner.stat_id].lose += 1;
-            }
-          })
-        })
-      })
-      setStats(allStats);
-      setFetching(false);
+  const stats = useMemo(() => {  // {<team_id>: {<stat_id>: {win:, lose:, tie:}}}
+    if (fetching) {
+      return undefined;
     }
-    getMatchupsUntilWeek();
-
-  }, [league, teams, statCate])
+    console.log('all', allMatchupsRaw)
+    let allStats = {};
+    teams.forEach(team => {
+      allStats[team.team_id] = {};
+    })
+    statCate.forEach(s => {
+      Object.keys(allStats).forEach(team => {
+        allStats[team][s.stat_id] = {'win': 0, 'lose': 0, 'tie': 0};
+      })
+    })
+    teams.forEach(team => {
+      allMatchupsRaw[team.team_id].forEach(week => {
+        week.stat_winners.stat_winner.forEach(stat_winner => {
+          if (stat_winner.is_tied) {
+            allStats[team.team_id][stat_winner.stat_id].tie += 1;
+          } else if (stat_winner.winner_team_key === team.team_key) {
+            allStats[team.team_id][stat_winner.stat_id].win += 1;
+          } else {
+            allStats[team.team_id][stat_winner.stat_id].lose += 1;
+          }
+        })
+      })
+    })
+    return allStats;
+  }, [fetching, allMatchupsRaw, teams, statCate])
 
   const calStats = useMemo(() => {
+    if (stats === undefined) {
+      return undefined;
+    }
     let sum = {};
     let rank = {};
 
