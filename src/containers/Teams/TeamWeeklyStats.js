@@ -18,7 +18,7 @@ import Typography from '@mui/material/Typography';
 import FetchingText from '../../components/FetchingText.js';
 import { composite_stats, composite_stats_formula } from '../../utils/composite_stats.js';
 import { selectLeague, selectTeams, selectStatCate, selectStatCateFull, selectGameWeeks } from '../metadataSlice.js';
-import { fetchDailyStats, selectDailyStats, selectDailyRoster, dailyStatsIsLoading as isLoading } from './teamsSlice.js';
+import { setTeam, fetchDailyStats, selectDailyStats, selectDailyRoster, dailyStatsIsLoading as isLoading } from './teamsSlice.js';
 
 function TeamWeeklyStats(props) {
   const { team } = useParams();
@@ -60,7 +60,7 @@ function TeamWeeklyStats(props) {
     if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
       return;
     }
-
+    dispatch(setTeam(team));
     dispatch(fetchDailyStats({team: team, dates: dates}));
   }, [team, teams, dates, dispatch])
 

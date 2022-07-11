@@ -35,7 +35,10 @@ const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: 'Lora'
+    fontFamily: 'Lora',
+    h6: {
+      fontWeight: 'bold',
+    },
   },
 });
 

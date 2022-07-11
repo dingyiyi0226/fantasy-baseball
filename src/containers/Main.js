@@ -8,7 +8,7 @@ import Toolbar from '@mui/material/Toolbar';
 import FetchingText from '../components/FetchingText.js';
 import LeagueHome from './LeagueHome.js';
 import PlayerRanking from './PlayerRanking';
-import Sidebar from '../components/Sidebar.js';
+import Sidebar from './Sidebar.js';
 import Stats from './Stats';
 import Teams from './Teams';
 import Transactions from './Transactions';

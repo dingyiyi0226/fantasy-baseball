@@ -48,6 +48,7 @@ export const fetchSeasonalStats = createAsyncThunk('teams/fetchSeasonalStats', a
 const teamsSlice = createSlice({
   name: 'teams',
   initialState: {
+    team: 1,
     matchupIsLoading: true,
     dailyStatsIsLoading: true,
     seasonalStatsIsLoading: true,
@@ -57,7 +58,11 @@ const teamsSlice = createSlice({
     weeklyStats: undefined,
     seasonalStats: undefined,
   },
-  reducers: {},
+  reducers: {
+    setTeam: (state, action) => {
+      state.team = action.payload;
+    }
+  },
   extraReducers: (builder) => {
     builder.addCase(fetchMatchups.fulfilled, (state, action) => {
       state.matchups = action.payload;
@@ -90,6 +95,9 @@ const teamsSlice = createSlice({
   }
 })
 
+export const { setTeam } = teamsSlice.actions;
+
+export const selectTeam = (state) => state.teams.team;
 export const matchupsIsLoading = (state) => state.teams.matchupIsLoading;
 export const dailyStatsIsLoading = (state) => state.teams.dailyStatsIsLoading;
 export const seasonalStatsIsLoading = (state) => state.teams.seasonalStatsIsLoading;

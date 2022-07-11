@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 import Box from '@mui/material/Box';
 import Collapse from '@mui/material/Collapse';
@@ -12,8 +13,11 @@ import Toolbar from '@mui/material/Toolbar';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 
+import { selectTeam } from './Teams/teamsSlice.js';
 
 function Sidebar(props) {
+  const team = useSelector(state => selectTeam(state));
+
   const [openStat, setOpenStat] = useState(false);
   const [openTeam, setOpenTeam] = useState(false);
 
@@ -100,19 +104,19 @@ function Sidebar(props) {
           <Collapse in={openTeam} timeout="auto" unmountOnExit>
             <List disablePadding>
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="teams/1/weekly" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to={`teams/${team}/weekly`} sx={{ pl: 4 }}>
                   <ListItemText primary="Weekly Stats" />
                 </ListItemButton>
               </ListItem>
 
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="teams/1/seasonal" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to={`teams/${team}/seasonal`} sx={{ pl: 4 }}>
                   <ListItemText primary="Seasonal Stats" />
                 </ListItemButton>
               </ListItem>
 
               <ListItem disablePadding>
-                <ListItemButton component={Link} to="teams/1/matchups" sx={{ pl: 4 }}>
+                <ListItemButton component={Link} to={`teams/${team}/matchups`} sx={{ pl: 4 }}>
                   <ListItemText primary="Matchups" />
                 </ListItemButton>
               </ListItem>

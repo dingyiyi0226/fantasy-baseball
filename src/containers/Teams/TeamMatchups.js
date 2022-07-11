@@ -13,7 +13,7 @@ import Stack from '@mui/material/Stack';
 
 import FetchingText from '../../components/FetchingText.js';
 import { selectTeams } from '../metadataSlice.js';
-import { fetchMatchups, selectMatchups, matchupsIsLoading as isLoading } from './teamsSlice.js';
+import { setTeam, fetchMatchups, selectMatchups, matchupsIsLoading as isLoading } from './teamsSlice.js';
 
 
 function TeamMatchups(props) {
@@ -36,7 +36,7 @@ function TeamMatchups(props) {
     if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
       return;
     }
-
+    dispatch(setTeam(team));
     dispatch(fetchMatchups(team));
   }, [team, teams, dispatch])
 

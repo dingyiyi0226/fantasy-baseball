@@ -13,7 +13,7 @@ import Stack from '@mui/material/Stack';
 
 import FetchingText from '../../components/FetchingText.js';
 import { selectLeague, selectTeams, selectStatCate, selectGameWeeks } from '../metadataSlice.js';
-import { fetchSeasonalStats, selectSeasonalStats, selectWeeklyStats, seasonalStatsIsLoading as isLoading } from './teamsSlice.js';
+import { setTeam, fetchSeasonalStats, selectSeasonalStats, selectWeeklyStats, seasonalStatsIsLoading as isLoading } from './teamsSlice.js';
 
 function TeamSeasonalStats(props) {
   const { team } = useParams();
@@ -43,7 +43,7 @@ function TeamSeasonalStats(props) {
     if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
       return;
     }
-
+    dispatch(setTeam(team));
     dispatch(fetchSeasonalStats({team: team, weeks: weeks}));
   }, [team, teams, weeks, dispatch])
 
