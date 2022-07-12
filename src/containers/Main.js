@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Route, Routes, Navigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux';
 
@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 
 import FetchingText from '../components/FetchingText.js';
+import Header from './Header.js';
 import LeagueHome from './LeagueHome.js';
 import PlayerRanking from './PlayerRanking';
 import Sidebar from './Sidebar.js';
@@ -22,13 +23,20 @@ function Main() {
   const game = useSelector(state => selectGame(state));
   const league = useSelector(state => selectLeague(state));
 
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   useEffect(() => {
     dispatch(fetchMetadata());
   }, [dispatch])
 
+  const toggleDrawer = () => {
+    setDrawerOpen(!drawerOpen);
+  }
+
   return (
     <React.Fragment>
-      <Sidebar />
+      <Header toggleDrawer={toggleDrawer}/>
+      <Sidebar drawerOpen={drawerOpen} toggleDrawer={toggleDrawer}/>
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
         <Toolbar variant="dense"/>
         <Routes>

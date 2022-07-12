@@ -21,6 +21,8 @@ function Sidebar(props) {
   const [openStat, setOpenStat] = useState(false);
   const [openTeam, setOpenTeam] = useState(false);
 
+  const drawerWidth = 200;
+
   const onClickStat = () => {
     setOpenStat(!openStat);
   }
@@ -29,15 +31,8 @@ function Sidebar(props) {
     setOpenTeam(!openTeam);
   }
 
-  return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: 200,
-        flexShrink: 0,
-        [`& .MuiDrawer-paper`]: { width: 200, boxSizing: 'border-box', bgcolor: 'background.default' },
-      }}
-    >
+  const drawer = (
+    <React.Fragment>
       <Toolbar variant="dense"/>
       <Box sx={{ overflow: 'auto'}}>
         <List>
@@ -122,10 +117,40 @@ function Sidebar(props) {
               </ListItem>
             </List>
           </Collapse>
-
         </List>
       </Box>
-    </Drawer>
+    </React.Fragment>
+  )
+
+  return (
+      <Box
+        component="nav"
+        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
+      >
+        <Drawer
+          variant="temporary"
+          open={props.drawerOpen}
+          onClose={props.toggleDrawer}
+          ModalProps={{
+            keepMounted: true, // Better open performance on mobile.
+          }}
+          sx={{
+            display: { xs: 'block', sm: 'block', md: 'none' },
+            '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box', bgcolor: 'background.default'},
+          }}
+        >
+          {drawer}
+        </Drawer>
+        <Drawer
+          variant="permanent"
+          sx={{
+            display: { xs: 'none', sm: 'none', md: 'block' },
+            [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', bgcolor: 'background.default' },
+          }}
+        >
+          {drawer}
+        </Drawer>
+    </Box>
   )
 }
 
