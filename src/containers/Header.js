@@ -37,6 +37,11 @@ function Header(props) {
         <Typography variant="h6" color="inherit" component={RouterLink} to="/home" sx={{textDecoration: 'none', flexGrow: 1}}>
           Fantasy Baseball
         </Typography>
+
+        <Button color="inherit" component={Link}
+          href="https://baseball.fantasysports.yahoo.com" target="_blank" rel="noopener noreferrer">
+          Official Site
+        </Button>
         <Button color="inherit" value="logout" onClick={onLogout}>Logout</Button>
         <IconButton
           size="large"
