@@ -90,7 +90,7 @@ const apis = {
 
   async getLeague(leagueKey) {
     try {
-      const query = `${baseURL}/league/${leagueKey};out=teams,settings`;
+      const query = `${baseURL}/league/${leagueKey};out=teams,settings,standings`;
       const results = await makeAPIrequest(query);
       return results.league;
     } catch (err) {

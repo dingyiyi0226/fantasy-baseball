@@ -38,6 +38,7 @@ export const selectLeague = (state) => state.metadata.league;
 export const selectLeagueKey = (state) => state.metadata.league.league_key;
 export const selectTeams = (state) => state.metadata.league.teams.team;
 export const selectStatCate = (state) => state.metadata.league.settings.stat_categories.stats.stat;
+export const selectStandings = (state) => state.metadata.league.standings.teams.team;
 export const selectStatCateFull = (state) => state.metadata.game.stat_categories.stats.stat;
 export const selectGameWeeks = (state) => state.metadata.game.game_weeks.game_week;
 
