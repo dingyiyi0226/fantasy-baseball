@@ -249,12 +249,13 @@ function TeamWeeklyStats(props) {
                       </Tooltip>
                     ) : stat.display_name}
                   </TableCell>
-                  {Object.keys(dailyStats).map(date => (
+                  {dates.map(date => (
                     <TableCell align="right" key={date}>
-                      {isNaN(dailyStats[date][stat.stat_id]) ?
+                      {dailyStats[date] ? (
+                        isNaN(dailyStats[date][stat.stat_id]) ?
                         dailyStats[date][stat.stat_id] || 'NaN' :
                         Math.round(dailyStats[date][stat.stat_id]*100)/100
-                      }
+                      ) : null}
                     </TableCell>
                   ))}
                   <TableCell>
