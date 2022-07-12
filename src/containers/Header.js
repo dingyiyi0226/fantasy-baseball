@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
@@ -34,7 +34,7 @@ function Header(props) {
           <MenuIcon />
         </IconButton>
 
-        <Typography variant="h6" color="inherit" component="div" sx={{ flexGrow: 1 }}>
+        <Typography variant="h6" color="inherit" component={RouterLink} to="/home" sx={{textDecoration: 'none', flexGrow: 1}}>
           Fantasy Baseball
         </Typography>
         <Button color="inherit" value="logout" onClick={onLogout}>Logout</Button>
