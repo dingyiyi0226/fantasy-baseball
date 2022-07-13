@@ -26,6 +26,7 @@ function Header() {
         <Button color="inherit" value="login" onClick={onLogin}>Login</Button>
         <IconButton
           size="large"
+          edge="end"
           aria-label="github repository"
           color="inherit"
           component={Link}

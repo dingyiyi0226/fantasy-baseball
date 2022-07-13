@@ -39,51 +39,13 @@ async function makeAPIrequest(url) {
 }
 
 const apis = {
-  async getMetadata() {
-    let metaData = {};
-
+  async getUserGames() {
     try {
-      // Get game info: game_key, game_weeks
-      let query = `${baseURL}/game/mlb;out=game_weeks,stat_categories`;
-      let results = await makeAPIrequest(query);
-      metaData.game = results.game;
-
-      // Get league key
-      query = `${baseURL}/users;use_login=1/games;game_keys=${metaData.game.game_key}/leagues`
-      results = await makeAPIrequest(query);
-      LEAGUE_KEY = results.users.user.games.game.leagues.league.league_key;
-      
-      // Get league info: teams, league_settings
-      query = `${baseURL}/league/${LEAGUE_KEY};out=teams,settings`;
-      results = await makeAPIrequest(query);
-      metaData.league = results.league;
-
-      return metaData;
-    } catch (err) {
-      console.error(`Error in getMetadata(): ${err}`);
-      return null;
-    }
-  },
-
-  async getGame() {
-    try {
-      const query = `${baseURL}/game/mlb;out=game_weeks,stat_categories`;
+      const query = `${baseURL}/users;use_login=1/games;out=game_weeks,stat_categories,leagues`;
       const results = await makeAPIrequest(query);
-      return results.game;
+      return results.users.user.games.game;
     } catch (err) {
-      console.error(`Error in getGame(): ${err}`);
-      return null;
-    }
-  },
-
-  async getLeagueKey(gameKey) {
-    try {
-      const query = `${baseURL}/users;use_login=1/games;game_keys=${gameKey}/leagues`;
-      const results = await makeAPIrequest(query);
-      LEAGUE_KEY = results.users.user.games.game.leagues.league.league_key; // tmp
-      return results.users.user.games.game.leagues.league.league_key;
-    } catch (err) {
-      console.error(`Error in getLeagueKey(): ${err}`);
+      console.error(`Error in getUserGames(): ${err}`);
       return null;
     }
   },
@@ -91,6 +53,7 @@ const apis = {
   async getLeague(leagueKey) {
     try {
       const query = `${baseURL}/league/${leagueKey};out=teams,settings,standings`;
+      LEAGUE_KEY = leagueKey;
       const results = await makeAPIrequest(query);
       return results.league;
     } catch (err) {
