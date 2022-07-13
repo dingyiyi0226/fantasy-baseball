@@ -14,6 +14,8 @@ import Typography from '@mui/material/Typography';
 
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import { to_local_date } from '../../utils/timezone.js';
 import FetchingText from '../../components/FetchingText.js';
@@ -75,9 +77,103 @@ function Transactions(props) {
     return result;
   }, [fetching, transactions, week, gameWeeks, league])
 
+  const transactionSum = (trans) => {
+    let sum = {'add': 0, 'drop': 0};
+    trans.forEach(tran => {
+      if (tran.type === 'add') {
+        sum.add += 1;
+      } else if (tran.type === 'drop') {
+        sum.drop += 1;
+      } else if (tran.type === 'add/drop') {
+        sum.add += 1;
+        sum.drop += 1;
+      } else if (tran.type === 'trade' && tran.status === 'successful') {
+        sum.add += 1;
+        sum.drop += 1;
+      }
+    })
+    return sum;
+  }
+
   const dateString = (timestamp) => {
     const date = new Date(timestamp*1000);
     return `${date.getHours()}:${String(date.getMinutes()).padStart(2,'0')} ${date.getMonth()+1}/${date.getDate()}`
+  }
+
+  const transactionCell = (tran, teamKey) => {
+    switch (tran.type) {
+      case 'add':
+      case 'drop':
+        return (
+          <React.Fragment>
+          <Typography align="right" variant="caption" display="block" color="transaction.timestamp" sx={{fontWeight: 'bold'}}>{dateString(tran.timestamp)}</Typography>
+            <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+              {tran.players.player.transaction_data.type === 'add' ?
+                <AddIcon fontSize="small" sx={{color: "transaction.add"}}/> :
+                <RemoveIcon fontSize="small" sx={{color: "transaction.drop"}}/>
+              }
+              <Typography variant="body2">{tran.players.player.name.full}</Typography>
+            </Stack>
+          </React.Fragment>
+        )
+      case 'add/drop':
+        return (
+          <React.Fragment>
+            <Typography align="right" variant="caption" display="block" color="transaction.timestamp" sx={{fontWeight: 'bold'}}>{dateString(tran.timestamp)}</Typography>
+            <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+              {tran.players.player[0].transaction_data.type === 'add' ?
+                <AddIcon fontSize="small" sx={{color: "transaction.add"}}/> :
+                <RemoveIcon fontSize="small" sx={{color: "transaction.drop"}}/>
+              }
+              <Typography variant="body2">{tran.players.player[0].name.full}</Typography>
+            </Stack>
+            <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+              {tran.players.player[1].transaction_data.type === 'add' ?
+                <AddIcon fontSize="small" sx={{color: "transaction.add"}}/> :
+                <RemoveIcon fontSize="small" sx={{color: "transaction.drop"}}/>
+              }
+              <Typography variant="body2">{tran.players.player[1].name.full}</Typography>
+            </Stack>
+          </React.Fragment>
+        )
+      case 'trade':
+        return (
+          <React.Fragment>
+            <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between"
+              sx={{'& :only-child': {marginLeft: 'auto'}}}>
+              {tran.status === 'vetoed' &&
+                <Typography align="right" variant="subtitle2" display="block">Vetoed</Typography>
+              }
+              <Typography align="right" variant="caption" display="block" color="transaction.timestamp" sx={{fontWeight: 'bold'}}>{dateString(tran.timestamp)}</Typography>
+            </Stack>
+            {tran.players.player[0].transaction_data.destination_team_key === teamKey ? (
+              <React.Fragment>
+                <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                  <ArrowForwardIcon fontSize="small" sx={{color: "transaction.add"}}/>
+                  <Typography variant="body2">{tran.players.player[0].name.full}</Typography>
+                </Stack>
+                <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                  <ArrowBackIcon fontSize="small" sx={{color: "transaction.drop"}}/>
+                  <Typography variant="body2">{tran.players.player[1].name.full}</Typography>
+                </Stack>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                  <ArrowForwardIcon fontSize="small" sx={{color: "transaction.add"}}/>
+                  <Typography variant="body2">{tran.players.player[1].name.full}</Typography>
+                </Stack>
+                <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                  <ArrowBackIcon fontSize="small" sx={{color: "transaction.drop"}}/>
+                  <Typography variant="body2">{tran.players.player[0].name.full}</Typography>
+                </Stack>
+              </React.Fragment>
+            )}
+          </React.Fragment>
+        )
+      default:
+        return null;
+    }
   }
 
   const onSelectWeek = (e) => {
@@ -119,33 +215,16 @@ function Transactions(props) {
                     <TableBody>
                       {weekTransactions[team.team_id].map(tran => (
                         <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 }}} key={tran.transaction_id}>
-                          <TableCell align="center" colSpan={4}>
-                            <Typography align="right" variant="caption" display="block" color="transaction.timestamp" sx={{fontWeight: 'bold'}}>{dateString(tran.timestamp)}</Typography>
-                            {Array.isArray(tran.players.player) ? (
-                              <React.Fragment>
-                                <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-                                  {tran.players.player[0].transaction_data.type === 'add' ? <AddIcon fontSize="small" sx={{color: "transaction.add"}}/> : <RemoveIcon fontSize="small" sx={{color: "transaction.drop"}}/>}
-                                  <Typography variant="body2">{tran.players.player[0].name.full}</Typography>
-                                </Stack>
-                                <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-                                  {tran.players.player[1].transaction_data.type === 'add' ? <AddIcon fontSize="small" sx={{color: "transaction.add"}}/> : <RemoveIcon fontSize="small" sx={{color: "transaction.drop"}}/>}
-                                  <Typography variant="body2">{tran.players.player[1].name.full}</Typography>
-                                </Stack>
-                              </React.Fragment>
-                            ) : (
-                              <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-                                {tran.players.player.transaction_data.type === 'add' ? <AddIcon fontSize="small" sx={{color: "transaction.add"}}/> : <RemoveIcon fontSize="small" sx={{color: "transaction.drop"}}/>}
-                                <Typography variant="body2">{tran.players.player.name.full}</Typography>
-                              </Stack>
-                            )}
+                          <TableCell align="center" colSpan={4} sx={{bgcolor: tran.status === 'vetoed' ? `background.paperDark` : null}}>
+                            {transactionCell(tran, team.team_key)}
                           </TableCell>
                         </TableRow>
                       ))}
                       <TableRow sx={{'&:last-child td, &:last-child th': { border: 0 }}}>
                         <TableCell align="right" sx={{fontWeight: 'bold'}}>Add</TableCell>
-                        <TableCell align="left" sx={{fontWeight: 'bold'}}>{weekTransactions[team.team_id].filter(t => t.type !== 'drop').length}</TableCell>
+                        <TableCell align="left" sx={{fontWeight: 'bold'}}>{transactionSum(weekTransactions[team.team_id]).add}</TableCell>
                         <TableCell align="right" sx={{fontWeight: 'bold'}}>Drop</TableCell>
-                        <TableCell align="left" sx={{fontWeight: 'bold'}}>{weekTransactions[team.team_id].filter(t => t.type !== 'add').length}</TableCell>
+                        <TableCell align="left" sx={{fontWeight: 'bold'}}>{transactionSum(weekTransactions[team.team_id]).drop}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>

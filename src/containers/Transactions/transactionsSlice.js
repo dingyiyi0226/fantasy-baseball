@@ -7,6 +7,9 @@ export const fetchTransactions = createAsyncThunk('stats/fetchTransactions', asy
   await Promise.all(teamIDs.map(async teamID => {
     const transactions = await apis.getTransactionsByTeam(teamID);
     allTransactions[teamID] = transactions || [];
+    if (!Array.isArray(allTransactions[teamID])) {
+      allTransactions[teamID] = [allTransactions[teamID]];  // handle length === 1
+    }
   }))
   return allTransactions;
 });
