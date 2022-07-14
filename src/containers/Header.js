@@ -10,6 +10,7 @@ import Link from '@mui/material/Link';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import GitHubIcon from '@mui/icons-material/GitHub';
@@ -100,18 +101,20 @@ function Header(props) {
         }
 
         <Button color="inherit" value="logout" onClick={onLogout} sx={{mx: 0.5}}>Logout</Button>
-        <IconButton
-          size="large"
-          edge="end"
-          aria-label="github repository"
-          color="inherit"
-          component={Link}
-          href="https://github.com/dingyiyi0226/fantasy-baseball"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <GitHubIcon />
-        </IconButton>
+          <Tooltip title="GitHub repository">
+            <IconButton
+              size="large"
+              edge="end"
+              aria-label="github repository"
+              color="inherit"
+              component={Link}
+              href="https://github.com/dingyiyi0226/fantasy-baseball"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <GitHubIcon />
+            </IconButton>
+        </Tooltip>
       </Toolbar>
     </AppBar>
   );
