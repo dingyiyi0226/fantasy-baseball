@@ -9,7 +9,7 @@ import Typography from '@mui/material/Typography';
 function Footer(props) {
   return (
     <Box component="footer" sx={{py: 1, bgcolor: 'background.footer', zIndex: (theme) => theme.zIndex.drawer + 1}}>
-      <Container sx={{px: 0}}>
+      <Container sx={{px: 2}}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Typography
             variant="caption"

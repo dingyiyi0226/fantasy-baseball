@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 
 import FetchingText from '../components/FetchingText.js';
-import Footer from './Footer.js';
+import Footer from '../components/Footer.js';
 import Header from './Header.js';
 import LeagueHome from './LeagueHome.js';
 import PlayerRanking from './PlayerRanking';

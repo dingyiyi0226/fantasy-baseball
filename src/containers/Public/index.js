@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import Login from './Login.js';
 import LoginRedirect from './LoginRedirect.js';
 import PublicHeader from './PublicHeader.js';
-import Footer from '../Footer.js';
+import Footer from '../../components/Footer.js';
 
 function Public(props) {
   return (
