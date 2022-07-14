@@ -205,6 +205,17 @@ const apis = {
     }
   },
 
+  async getTransactions() {
+    const query = `${baseURL}/league/${LEAGUE_KEY}/transactions`;
+    try {
+      const results = await makeAPIrequest(query);
+      return results.league.transactions.transaction;
+    } catch (err) {
+      console.error(`Error in getTransactions(): ${err}`);
+      return err;
+    }
+  },
+
   async getTransactionsByTeam(team) {
     const team_key = `${LEAGUE_KEY}.t.${team}`;
     const query = `${baseURL}/league/${LEAGUE_KEY}/transactions;team_key=${team_key}`;

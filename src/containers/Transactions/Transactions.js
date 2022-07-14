@@ -30,7 +30,7 @@ function Transactions(props) {
   const teams = useSelector(state => selectTeams(state));
 
   const fetching = useSelector(state => isLoading(state));
-  const transactions = useSelector(state => selectTransactions(state));  // {[team]: transactions}
+  const transactionsRaw = useSelector(state => selectTransactions(state));  // [transactions]
 
   const [week, setWeek] = useState(league.current_week);
 
@@ -38,10 +38,54 @@ function Transactions(props) {
     dispatch(fetchTransactions(teams.map(t => t.team_id)));
   }, [teams, dispatch])
 
-  const weekTransactions = useMemo(() => {
+  const transactions = useMemo(() => {
     // {[team]: transactions}
 
     if (fetching) {
+      return undefined;
+    }
+
+    const result = {};
+    teams.forEach(team => {
+      result[team.team_id] = [];
+    })
+
+    transactionsRaw.forEach(trans => {
+      switch (trans.type) {
+        case 'add':
+          if (trans.players.player.transaction_data.destination_type === 'team') {
+            result[trans.players.player.transaction_data.destination_team_key.split('.').pop()].push(trans);
+          }
+          break;
+        case 'drop':
+          if (trans.players.player.transaction_data.source_type === 'team') {
+            result[trans.players.player.transaction_data.source_team_key.split('.').pop()].push(trans);
+          }
+          break;
+        case 'add/drop':
+          if (trans.players.player[0].transaction_data.source_type === 'team') {
+            result[trans.players.player[0].transaction_data.source_team_key.split('.').pop()].push(trans);
+          } else {
+            result[trans.players.player[1].transaction_data.source_team_key.split('.').pop()].push(trans);
+          }
+          break;
+        case 'trade':
+          result[trans.players.player[0].transaction_data.source_team_key.split('.').pop()].push(trans);
+          result[trans.players.player[0].transaction_data.destination_team_key.split('.').pop()].push(trans);
+          break;
+        default:
+          break;
+      }
+    })
+    return result;
+
+  }, [fetching, transactionsRaw, teams])
+
+
+  const weekTransactions = useMemo(() => {
+    // {[team]: transactions}
+
+    if (transactions === undefined) {
       return undefined;
     }
 
@@ -75,7 +119,7 @@ function Transactions(props) {
     })
 
     return result;
-  }, [fetching, transactions, week, gameWeeks, league])
+  }, [transactions, week, gameWeeks, league])
 
   const transactionSum = (trans) => {
     let sum = {'add': 0, 'drop': 0};
