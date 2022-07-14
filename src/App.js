@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { BrowserRouter } from "react-router-dom";
 
-import Box from '@mui/material/Box';
-
 import AuthContext from './contexts/AuthContext.js';
 import Main from './containers/Main.js';
 import Public from './containers/Public';
@@ -32,9 +30,7 @@ class App extends Component {
     return (
       <AuthContext.Provider value={this.state}>
         <BrowserRouter basename={ process.env.PUBLIC_URL }>
-          <Box sx={{ display: 'flex' }}>
-            {this.state.isLogin ? <Main/> : <Public/>}
-          </Box>
+          {this.state.isLogin ? <Main/> : <Public/>}
         </BrowserRouter>
       </AuthContext.Provider>
     )

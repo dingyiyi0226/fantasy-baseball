@@ -1,14 +1,16 @@
 import React from 'react';
 import { Routes, Route, Navigate } from'react-router-dom';
 
+import Box from '@mui/material/Box';
+
 import Login from './Login.js';
 import LoginRedirect from './LoginRedirect.js';
 import PublicHeader from './PublicHeader.js';
-
+import Footer from '../Footer.js';
 
 function Public(props) {
   return (
-    <React.Fragment>
+    <Box sx={{display: 'flex', flexDirection: 'column',  minHeight: '100vh'}}>
       <PublicHeader />
       <Routes>
         <Route path="/">
@@ -18,7 +20,9 @@ function Public(props) {
           <Route path="*" element=<Navigate to="login" replace={true} />/>
         </Route>
       </Routes>
-    </React.Fragment>
+      <Box sx={{flexGrow: 1}}/>
+      <Footer />
+    </Box>
   )
 }
 

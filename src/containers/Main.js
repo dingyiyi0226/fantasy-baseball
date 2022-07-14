@@ -6,6 +6,7 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 
 import FetchingText from '../components/FetchingText.js';
+import Footer from './Footer.js';
 import Header from './Header.js';
 import LeagueHome from './LeagueHome.js';
 import PlayerRanking from './PlayerRanking';
@@ -34,23 +35,26 @@ function Main() {
   }
 
   return (
-    <React.Fragment>
+    <Box sx={{ display: 'flex'}}>
       <Header toggleDrawer={toggleDrawer}/>
       <Sidebar drawerOpen={drawerOpen} toggleDrawer={toggleDrawer}/>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+      <Box component="main" sx={{flexGrow: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
         <Toolbar variant="dense"/>
-        <Routes>
-          <Route path="/">
-            <Route index element=<Navigate to="home" replace={true} />/>
-            <Route path="home" element={fetching ? <FetchingText /> : <LeagueHome />} />
-            <Route path="stats/*" element={fetching ? <FetchingText /> : <Stats />} />
-            <Route path="teams/*" element={fetching ? <FetchingText /> : <Teams league={league} game={game}/>} />
-            <Route path="player-ranking" element={fetching ? <FetchingText /> : <PlayerRanking league={league} />} />
-            <Route path="transactions" element={fetching ? <FetchingText /> : <Transactions league={league} game={game}/>} />
-          </Route>
-        </Routes>
+        <Box sx={{flexGrow: 1, p: 3}}>
+          <Routes>
+            <Route path="/">
+              <Route index element=<Navigate to="home" replace={true} />/>
+              <Route path="home" element={fetching ? <FetchingText /> : <LeagueHome />} />
+              <Route path="stats/*" element={fetching ? <FetchingText /> : <Stats />} />
+              <Route path="teams/*" element={fetching ? <FetchingText /> : <Teams league={league} game={game}/>} />
+              <Route path="player-ranking" element={fetching ? <FetchingText /> : <PlayerRanking league={league} />} />
+              <Route path="transactions" element={fetching ? <FetchingText /> : <Transactions league={league} game={game}/>} />
+            </Route>
+          </Routes>
+        </Box>
+        <Footer />
       </Box>
-    </React.Fragment>
+    </Box>
   )
 }
 
