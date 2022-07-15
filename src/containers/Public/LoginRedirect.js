@@ -28,7 +28,7 @@ function LoginRedirect(props) {
   }, [authCode, setLogin, navigate]);
 
   return (
-    <Backdrop open sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+    <Backdrop open sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.modal}}>
       <CircularProgress color="inherit" />
     </Backdrop>
   )
