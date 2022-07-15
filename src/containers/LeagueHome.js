@@ -37,10 +37,10 @@ function LeagueHome(props) {
               <TableCell align="center">Rank</TableCell>
               <TableCell align="center">Team</TableCell>
               <TableCell align="center" sx={{minWidth: 90}}>W-L-T</TableCell>
-              <TableCell align="center" sx={{display: {xs: 'none', sm: 'none', md: 'table-cell'}}}>PCT</TableCell>
+              <TableCell align="center" sx={{display: {xs: 'none', sm: 'table-cell'}}}>PCT</TableCell>
               <TableCell align="center" sx={{display: {xs: 'none', sm: 'table-cell'}}}>GB</TableCell>
-              <TableCell align="center" sx={{display: {xs: 'none', sm: 'none', md: 'table-cell'}}}>Waiver</TableCell>
-              <TableCell align="center" sx={{display: {xs: 'none', sm: 'none', md: 'none', lg: 'table-cell'}}}>Manager</TableCell>
+              <TableCell align="center" sx={{display: {xs: 'none', md: 'table-cell'}}}>Waiver</TableCell>
+              <TableCell align="center" sx={{display: {xs: 'none', lg: 'table-cell'}}}>Manager</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -54,10 +54,10 @@ function LeagueHome(props) {
                   </Stack>
                 </TableCell>
                 <TableCell align="center">{`${team.team_standings.outcome_totals.wins}-${team.team_standings.outcome_totals.losses}-${team.team_standings.outcome_totals.ties}`}</TableCell>
-                <TableCell align="center" sx={{display: {xs: 'none', sm: 'none', md: 'table-cell'}}}>{team.team_standings.outcome_totals.percentage}</TableCell>
+                <TableCell align="center" sx={{display: {xs: 'none', sm: 'table-cell'}}}>{team.team_standings.outcome_totals.percentage}</TableCell>
                 <TableCell align="center" sx={{display: {xs: 'none', sm: 'table-cell'}}}>{team.team_standings.games_back}</TableCell>
-                <TableCell align="center" sx={{display: {xs: 'none', sm: 'none', md: 'table-cell'}}}>{team.waiver_priority}</TableCell>
-                <TableCell align="left" sx={{display: {xs: 'none', sm: 'none', md: 'none', lg: 'table-cell'}}}>
+                <TableCell align="center" sx={{display: {xs: 'none', md: 'table-cell'}}}>{team.waiver_priority}</TableCell>
+                <TableCell align="left" sx={{display: {xs: 'none', lg: 'table-cell'}}}>
                   <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
                     <Avatar alt={team.managers.manager.nickname} src={team.managers.manager.image_url} />
                     <Typography variant="body">{team.managers.manager.nickname}</Typography>
