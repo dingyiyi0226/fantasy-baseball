@@ -9,6 +9,7 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import FetchingText from '../../components/FetchingText.js';
+import PageTitle from '../../components/PageTitle.js';
 import { selectLeague, selectTeams, selectStatCate } from '../metadataSlice.js';
 import { fetchMatchupsUntilWeek, selectAllMatchups, allMatchupsIsLoading as isLoading } from './statsSlice.js';
 
@@ -96,6 +97,7 @@ function WinLoss() {
 
   return (
     <Container>
+      <PageTitle title="Win-Loss Stats" subtitle={`Win-Loss ${statTypes.map(t => t === 'B' ? 'batting' : 'pitching').join(', ')} stats in the season`}/>
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
         <ToggleButtonGroup
           value={statTypes}

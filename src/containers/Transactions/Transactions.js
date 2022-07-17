@@ -19,6 +19,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import { to_local_date } from '../../utils/timezone.js';
 import FetchingText from '../../components/FetchingText.js';
+import PageTitle from '../../components/PageTitle.js';
 import { selectGameWeeks, selectLeague, selectTeams } from '../metadataSlice.js';
 import { fetchTransactions, selectTransactions, isLoading } from './transactionsSlice.js';
 
@@ -226,6 +227,7 @@ function Transactions(props) {
 
   return (
     <Container>
+      <PageTitle title="Transactions" subtitle={week === 0 ? "All transactions before the season start": `All transactions of week ${week}`}/>
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
         <FormControl variant="filled" sx={{ minWidth: 80 }}>
           <InputLabel id="week-label">Week</InputLabel>

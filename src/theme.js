@@ -40,6 +40,14 @@ const theme = createTheme({
     h6: {
       fontWeight: 'bold',
     },
+    pageTitle: {
+      fontSize: '1.5rem',
+      fontWeight: 'bold',
+    },
+    pageSubtitle: {
+      fontSize: '1.25rem',
+      fontWeight: 'bold',
+    }
   },
 });
 

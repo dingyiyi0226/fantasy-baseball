@@ -12,6 +12,7 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 
 import FetchingText from '../../components/FetchingText.js';
+import PageTitle from '../../components/PageTitle.js';
 import { selectLeague, selectTeams, selectStatCate, selectGameWeeks } from '../metadataSlice.js';
 import { setTeam, fetchSeasonalStats, selectSeasonalStats, selectWeeklyStats, seasonalStatsIsLoading as isLoading } from './teamsSlice.js';
 
@@ -56,6 +57,7 @@ function TeamSeasonalStats(props) {
 
   return (
     <Container>
+      <PageTitle title="Seasonal Stats" subtitle={`Seasonal stats by week of team ${teams.find(t => t.team_id === Number(team)).name}`}/>
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
         <FormControl variant="filled" sx={{ minWidth: 160 }}>
           <InputLabel id="team-label">Team</InputLabel>

@@ -13,6 +13,7 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 
 import FetchingText from '../../components/FetchingText.js';
+import PageTitle from '../../components/PageTitle.js';
 import { selectTeams } from '../metadataSlice.js';
 import { setTeam, fetchMatchups, selectMatchups, matchupsIsLoading as isLoading } from './teamsSlice.js';
 
@@ -125,6 +126,7 @@ function TeamMatchups(props) {
 
   return (
     <Container>
+      <PageTitle title="Matchups" subtitle={`Season matchups of team ${teams.find(t => t.team_id === Number(team)).name}`}/>
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
         <FormControl variant="filled" sx={{ minWidth: 160 }}>
           <InputLabel id="team-label">Team</InputLabel>

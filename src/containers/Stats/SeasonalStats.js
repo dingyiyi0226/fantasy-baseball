@@ -11,6 +11,8 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import CircleIcon from '@mui/icons-material/Circle';
 
 import FetchingText from '../../components/FetchingText.js';
+import PageTitle from '../../components/PageTitle.js';
+import PageSubtitle from '../../components/PageSubtitle.js';
 import { selectTeams, selectStatCate } from '../metadataSlice.js';
 import { fetchStatsBySeason, selectSeasonalStats, seasonalIsLoading as isLoading } from './statsSlice.js';
 import { statsPreprocessing, statsH2H, statsRankAvg, statsH2HSum } from './statsHelper.js';
@@ -64,6 +66,7 @@ function SeasonalStats(props) {
 
   return (
     <Container>
+      <PageTitle title="Seasonal Stats" subtitle={`Seasonal stats summary by ${type}`}/>
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
         <ToggleButtonGroup
           value={type}
@@ -130,7 +133,8 @@ function SeasonalStats(props) {
               </Table>
             </TableContainer>
 
-            <Stack direction="row" spacing={1} sx={{ mt: 4 }}>
+            <PageSubtitle title="Matchup Results" subtitle={`Matchup results between teams of the season`}/>
+            <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
               <Chip icon={<CircleIcon sx={{ "&&": { color: "status.win" }}}/>} label="Win" variant="outlined" size="small"/>
               <Chip icon={<CircleIcon sx={{ "&&": { color: "status.lose" }}}/>} label="Lose" variant="outlined" size="small"/>
               <Chip icon={<CircleIcon sx={{ "&&": { color: "status.tie" }}}/>} label="Tie" variant="outlined" size="small"/>

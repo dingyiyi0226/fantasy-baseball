@@ -12,6 +12,7 @@ import Stack from '@mui/material/Stack';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 
 import FetchingText from '../../components/FetchingText.js';
+import PageTitle from '../../components/PageTitle.js';
 import { selectTeams } from '../metadataSlice.js';
 import { fetchPlayerRanking, selectPlayerRanking, isLoading } from './playerRankingSlice.js';
 
@@ -56,6 +57,7 @@ function PlayerRanking(props) {
 
   return (
     <Container>
+      <PageTitle title="Player Ranking" subtitle={`Top ${playerNum} players in this season`}/>
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
         <FormControl variant="filled" sx={{ minWidth: 120 }}>
           <InputLabel id="playerNum-label">Max Ranking</InputLabel>

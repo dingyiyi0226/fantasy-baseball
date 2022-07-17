@@ -16,6 +16,7 @@ import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 
 import FetchingText from '../../components/FetchingText.js';
+import PageTitle from '../../components/PageTitle.js';
 import { composite_stats, composite_stats_formula } from '../../utils/composite_stats.js';
 import { selectLeague, selectTeams, selectStatCate, selectStatCateFull, selectGameWeeks } from '../metadataSlice.js';
 import { setTeam, fetchDailyStats, selectDailyStats, selectDailyRoster, dailyStatsIsLoading as isLoading } from './teamsSlice.js';
@@ -175,6 +176,7 @@ function TeamWeeklyStats(props) {
 
   return (
     <Container>
+      <PageTitle title="Weekly Stats" subtitle={`Week ${week} stats by date of team ${teams.find(t => t.team_id === Number(team)).name}`}/>
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
         <FormControl variant="filled" sx={{ minWidth: 160 }}>
           <InputLabel id="team-label">Team</InputLabel>

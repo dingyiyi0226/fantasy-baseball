@@ -17,6 +17,8 @@ import CircleIcon from '@mui/icons-material/Circle';
 
 import { to_fantasy_date } from '../../utils/timezone.js';
 import FetchingText from '../../components/FetchingText.js';
+import PageTitle from '../../components/PageTitle.js';
+import PageSubtitle from '../../components/PageSubtitle.js';
 import { selectLeague, selectGameWeeks, selectTeams, selectStatCate } from '../metadataSlice.js';
 import { fetchMatchupsByWeek, fetchStatsByDate, selectMatchups, selectDailyStats, dailyIsLoading as isLoading } from './statsSlice.js';
 import { statsPreprocessing, statsH2H, statsRankAvg, statsH2HSum } from './statsHelper.js';
@@ -152,6 +154,7 @@ function DailyStats() {
 
   return (
     <Container>
+      <PageTitle title="Daily Stats" subtitle={`${searchParams.get('date') || ''} stats summary by ${type}`}/>
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
         <FormControl variant="filled" sx={{ minWidth: 80 }}>
           <InputLabel id="week-label">Week</InputLabel>
@@ -249,7 +252,9 @@ function DailyStats() {
               </Table>
             </TableContainer>
 
-            <Stack direction="row" spacing={1} sx={{ mt: 4 }}>
+            <PageSubtitle title="Matchup Results" subtitle={`Matchup results between teams of ${searchParams.get('date') || ''}`}/>
+
+            <Stack direction="row" spacing={1} sx={{ mt: 2 }}>
               <Chip icon={<CircleIcon sx={{ "&&": { color: "status.win" }}}/>} label="Win" variant="outlined" size="small"/>
               <Chip icon={<CircleIcon sx={{ "&&": { color: "status.lose" }}}/>} label="Lose" variant="outlined" size="small"/>
               <Chip icon={<CircleIcon sx={{ "&&": { color: "status.tie" }}}/>} label="Tie" variant="outlined" size="small"/>
