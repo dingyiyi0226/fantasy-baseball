@@ -1,7 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import html2canvas from 'html2canvas';
 
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
+import Modal from '@mui/material/Modal';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
@@ -12,9 +16,11 @@ import FetchingText from '../../components/FetchingText.js';
 import PageTitle from '../../components/PageTitle.js';
 import { selectLeague, selectTeams, selectStatCate } from '../metadataSlice.js';
 import { fetchMatchupsUntilWeek, selectAllMatchups, allMatchupsIsLoading as isLoading } from './statsSlice.js';
+import { download_img, can_share_img, share_img } from '../../utils/share.js';
 
 
 function WinLoss() {
+  const dataRef = useRef(null);
   const dispatch = useDispatch();
   const teams = useSelector(state => selectTeams(state));
   const league = useSelector(state => selectLeague(state));
@@ -24,6 +30,9 @@ function WinLoss() {
   const allMatchupsRaw = useSelector(state => selectAllMatchups(state));  // {<team_id>: []}
 
   const [statTypes, setStatTypes] = useState(['B', 'P']);  // B: batting, P: pitching
+  const [modalOpen, setModalOpen] = useState(false);
+  const [canvasURL, setCanvasURL] = useState('');
+  const [canvasBlob, setCanvasBlob] = useState(undefined);
 
   useEffect(() => {
     dispatch(fetchMatchupsUntilWeek({teamIDs: teams.map(t => t.team_id), week: league.current_week-1}));
@@ -33,7 +42,6 @@ function WinLoss() {
     if (fetching) {
       return undefined;
     }
-    console.log('all', allMatchupsRaw)
     let allStats = {};
     teams.forEach(team => {
       allStats[team.team_id] = {};
@@ -95,19 +103,80 @@ function WinLoss() {
     setStatTypes(types);
   }
 
+  const canShareImg = useMemo(() => {
+    return can_share_img(canvasBlob);
+  }, [canvasBlob])
+
+  const onShare = async () => {
+    setModalOpen(true);
+
+    const canvas = await html2canvas(dataRef.current);
+    const image = canvas.toDataURL("image/png", 1.0);
+    setCanvasURL(image);
+    canvas.toBlob((blob) => {
+      setCanvasBlob(blob);
+    }, "image/png", 1.0);
+  }
+
+  const onDownloadImg = (filename) => {
+    download_img(canvasURL, filename);
+  }
+
+  const onShareImg = async (filename, title, text) => {
+    try {
+      share_img(canvasBlob, filename, title, text);
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error(err.name, err.message);
+      }
+    }
+  }
+
+
+  const handleModalClose = () => setModalOpen(false);
+
+  const title = "Win-Loss Stats";
+  const subtitle = `Win-Loss ${statTypes.map(t => t === 'B' ? 'batting' : 'pitching').join(', ')} stats in the season`;
+
   return (
-    <Container>
-      <PageTitle title="Win-Loss Stats" subtitle={`Win-Loss ${statTypes.map(t => t === 'B' ? 'batting' : 'pitching').join(', ')} stats in the season`}/>
-      <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
+    <Container ref={dataRef}>
+      <PageTitle title={title} subtitle={subtitle}/>
+      <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" data-html2canvas-ignore>
         <ToggleButtonGroup
           value={statTypes}
           onChange={onChangeType}
           aria-label="type-selector"
+          size="small"
         >
           <ToggleButton value="B" aria-label="Batting">Batting</ToggleButton>
           <ToggleButton value="P" aria-label="Pitching">Pitching</ToggleButton>
         </ToggleButtonGroup>
+
+        <Button variant="contained" disableElevation size="medium" sx={{bgcolor: "primary.main"}}
+          onClick={onShare}>
+          Share
+        </Button>
       </Stack>
+
+      <Modal
+        open={modalOpen}
+        onClose={handleModalClose}
+      >
+        <Box display="flex" flexDirection="column" alignItems="center"
+          sx={{position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+                  width: "50%", bgcolor: "background.default", boxShadow: 24, p: 4}}>
+
+          <Box component="img" alt="share-canvas" src={canvasURL}
+            sx={{width: "80%", mb: 2, borderRadius: '4px', boxShadow: 2}}
+          />
+          <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
+            <Button variant="contained" onClick={() => onDownloadImg(title)}>Download</Button>
+            {canShareImg &&
+              <Button variant="contained" onClick={() => onShareImg(title, title, subtitle)}>Share</Button>
+            }
+          </Stack>
+        </Box>
+      </Modal>
 
       {fetching ?
         <FetchingText /> :
