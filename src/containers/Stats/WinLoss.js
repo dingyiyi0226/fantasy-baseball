@@ -16,7 +16,7 @@ import FetchingText from '../../components/FetchingText.js';
 import PageTitle from '../../components/PageTitle.js';
 import { selectLeague, selectTeams, selectStatCate } from '../metadataSlice.js';
 import { fetchMatchupsUntilWeek, selectAllMatchups, allMatchupsIsLoading as isLoading } from './statsSlice.js';
-import { download_img, can_share_img, share_img } from '../../utils/share.js';
+import { download_img } from '../../utils/share.js';
 
 
 function WinLoss() {
@@ -32,7 +32,7 @@ function WinLoss() {
   const [statTypes, setStatTypes] = useState(['B', 'P']);  // B: batting, P: pitching
   const [modalOpen, setModalOpen] = useState(false);
   const [canvasURL, setCanvasURL] = useState('');
-  const [canvasBlob, setCanvasBlob] = useState(undefined);
+
 
   useEffect(() => {
     dispatch(fetchMatchupsUntilWeek({teamIDs: teams.map(t => t.team_id), week: league.current_week-1}));
@@ -103,9 +103,6 @@ function WinLoss() {
     setStatTypes(types);
   }
 
-  const canShareImg = useMemo(() => {
-    return can_share_img(canvasBlob);
-  }, [canvasBlob])
 
   const onShare = async () => {
     setModalOpen(true);
@@ -113,25 +110,11 @@ function WinLoss() {
     const canvas = await html2canvas(dataRef.current);
     const image = canvas.toDataURL("image/png", 1.0);
     setCanvasURL(image);
-    canvas.toBlob((blob) => {
-      setCanvasBlob(blob);
-    }, "image/png", 1.0);
   }
 
   const onDownloadImg = (filename) => {
     download_img(canvasURL, filename);
   }
-
-  const onShareImg = async (filename, title, text) => {
-    try {
-      share_img(canvasBlob, filename, title, text);
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.error(err.name, err.message);
-      }
-    }
-  }
-
 
   const handleModalClose = () => setModalOpen(false);
 
@@ -154,7 +137,7 @@ function WinLoss() {
 
         <Button variant="contained" disableElevation size="medium" sx={{bgcolor: "primary.main"}}
           onClick={onShare}>
-          Share
+          Export
         </Button>
       </Stack>
 
@@ -171,9 +154,6 @@ function WinLoss() {
           />
           <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
             <Button variant="contained" onClick={() => onDownloadImg(title)}>Download</Button>
-            {canShareImg &&
-              <Button variant="contained" onClick={() => onShareImg(title, title, subtitle)}>Share</Button>
-            }
           </Stack>
         </Box>
       </Modal>
