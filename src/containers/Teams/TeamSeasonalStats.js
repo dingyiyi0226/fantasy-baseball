@@ -66,7 +66,7 @@ function TeamSeasonalStats(props) {
   }
 
   const onShare = async () => {
-    const canvas = await html2canvas(canvasRef.current, {backgroundColor: theme.palette.background.default});
+    const canvas = await html2canvas(canvasRef.current, {backgroundColor: theme.palette.background.default, windowWidth: 1400});
     const image = canvas.toDataURL("image/png", 1.0);
     setCanvasURL(image);
     setModalOpen(true);
