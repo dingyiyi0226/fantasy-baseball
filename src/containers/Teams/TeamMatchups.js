@@ -1,7 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTheme } from '@mui/material/styles';
+import html2canvas from 'html2canvas';
 
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
@@ -14,11 +18,14 @@ import Stack from '@mui/material/Stack';
 
 import FetchingText from '../../components/FetchingText.js';
 import PageTitle from '../../components/PageTitle.js';
+import ShareModal from '../../components/ShareModal.js';
 import { selectTeams } from '../metadataSlice.js';
 import { setTeam, fetchMatchups, selectMatchups, matchupsIsLoading as isLoading } from './teamsSlice.js';
 
 
 function TeamMatchups(props) {
+  const theme = useTheme();
+  const canvasRef = useRef(null);
   const { team } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -26,6 +33,9 @@ function TeamMatchups(props) {
   const teams = useSelector(state => selectTeams(state));
   const fetching = useSelector(state => isLoading(state));
   const matchups = useSelector(state => selectMatchups(state));
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [canvasURL, setCanvasURL] = useState('');
 
   useEffect(() => {
     if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
@@ -88,6 +98,15 @@ function TeamMatchups(props) {
     navigate(`/teams/${e.target.value}/matchups`);
   }
 
+  const onShare = async () => {
+    const canvas = await html2canvas(canvasRef.current, {backgroundColor: theme.palette.background.default});
+    const image = canvas.toDataURL("image/png", 1.0);
+    setCanvasURL(image);
+    setModalOpen(true);
+  }
+
+  const handleModalClose = () => setModalOpen(false);
+
   const matchupsTable = (matchups) => (
     <TableContainer component={Paper}>
       <Table size="small" sx={{minWidth: 300, 'th': {fontWeight: 'bold'}}} aria-label="matchup-table">
@@ -124,49 +143,61 @@ function TeamMatchups(props) {
     </TableContainer>
   )
 
-  return (
-    <Container>
-      <PageTitle title="Matchups" subtitle={`Season matchups of team ${teams.find(t => t.team_id === Number(team)).name}`}/>
-      <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
-        <FormControl variant="filled" sx={{ minWidth: 160 }}>
-          <InputLabel id="team-label">Team</InputLabel>
-          <Select
-            labelId="team-label"
-            id="team-selector"
-            value={team}
-            onChange={onSelectTeam}
-          >
-            {teams.map(t => (
-              <MenuItem value={t.team_id} key={t.team_id}>{t.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Stack>
+  const title = "Matchups";
+  const subtitle = `Season matchups of team ${teams.find(t => t.team_id === Number(team)).name}`;
 
-      {fetching ?
-        <FetchingText /> :
-        <Grid container spacing={2} justifyContent="center" sx={{py: 2}}>
-          <Grid item xs={12} sm={10} md={8} sx={{display: {lg: 'none'}}}>
-            {matchupsTable(matchups)}
-          </Grid>
-          {matchups.length > 13 ? (
-            <React.Fragment>
-              <Grid item lg={6} sx={{display: {xs: 'none', lg: 'block'}}}>
-                {matchupsTable(matchups.slice(0, 13))}
-              </Grid>
-              <Grid item lg={6} sx={{display: {xs: 'none', lg: 'block'}}}>
-                {matchupsTable(matchups.slice(13))}
-              </Grid>
-            </React.Fragment>
-          ) : (
-            <Grid item lg={6} sx={{display: {xs: 'none', lg: 'block'}}}>
+  return (
+    <React.Fragment>
+      <ShareModal title={title} canvasURL={canvasURL} open={modalOpen} onClose={handleModalClose} />
+      <Container ref={canvasRef} sx={{py: 2}}>
+        <PageTitle title={title} subtitle={subtitle}/>
+        <Stack direction="row" spacing={2} alignItems="center" data-html2canvas-ignore>
+          <FormControl variant="filled" sx={{ minWidth: 160 }}>
+            <InputLabel id="team-label">Team</InputLabel>
+            <Select
+              labelId="team-label"
+              id="team-selector"
+              value={team}
+              onChange={onSelectTeam}
+            >
+              {teams.map(t => (
+                <MenuItem value={t.team_id} key={t.team_id}>{t.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Box sx={{display: 'flex', flexGrow: 1}}></Box>
+          <Button variant="contained" disableElevation size="large" sx={{bgcolor: "primary.main"}}
+            onClick={onShare}>
+            Export
+          </Button>
+        </Stack>
+
+        {fetching ?
+          <FetchingText /> :
+          <Grid container spacing={2} justifyContent="center" sx={{py: 2}}>
+            <Grid item xs={12} sm={10} md={8} sx={{display: {lg: 'none'}}}>
               {matchupsTable(matchups)}
             </Grid>
-          )}
-          
-        </Grid>
-      }
-    </Container>
+            {matchups.length > 13 ? (
+              <React.Fragment>
+                <Grid item lg={6} sx={{display: {xs: 'none', lg: 'block'}}}>
+                  {matchupsTable(matchups.slice(0, 13))}
+                </Grid>
+                <Grid item lg={6} sx={{display: {xs: 'none', lg: 'block'}}}>
+                  {matchupsTable(matchups.slice(13))}
+                </Grid>
+              </React.Fragment>
+            ) : (
+              <Grid item lg={6} sx={{display: {xs: 'none', lg: 'block'}}}>
+                {matchupsTable(matchups)}
+              </Grid>
+            )}
+            
+          </Grid>
+        }
+      </Container>
+    </React.Fragment>
   )
 }
 

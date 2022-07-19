@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTheme } from '@mui/material/styles';
 import html2canvas from 'html2canvas';
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Modal from '@mui/material/Modal';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
@@ -14,13 +14,14 @@ import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 import FetchingText from '../../components/FetchingText.js';
 import PageTitle from '../../components/PageTitle.js';
+import ShareModal from '../../components/ShareModal.js';
 import { selectLeague, selectTeams, selectStatCate } from '../metadataSlice.js';
 import { fetchMatchupsUntilWeek, selectAllMatchups, allMatchupsIsLoading as isLoading } from './statsSlice.js';
-import { download_img } from '../../utils/share.js';
 
 
 function WinLoss() {
-  const dataRef = useRef(null);
+  const theme = useTheme();
+  const canvasRef = useRef(null);
   const dispatch = useDispatch();
   const teams = useSelector(state => selectTeams(state));
   const league = useSelector(state => selectLeague(state));
@@ -103,17 +104,11 @@ function WinLoss() {
     setStatTypes(types);
   }
 
-
   const onShare = async () => {
-    setModalOpen(true);
-
-    const canvas = await html2canvas(dataRef.current);
+    const canvas = await html2canvas(canvasRef.current, {backgroundColor: theme.palette.background.default});
     const image = canvas.toDataURL("image/png", 1.0);
     setCanvasURL(image);
-  }
-
-  const onDownloadImg = (filename) => {
-    download_img(canvasURL, filename);
+    setModalOpen(true);
   }
 
   const handleModalClose = () => setModalOpen(false);
@@ -122,100 +117,86 @@ function WinLoss() {
   const subtitle = `Win-Loss ${statTypes.map(t => t === 'B' ? 'batting' : 'pitching').join(', ')} stats in the season`;
 
   return (
-    <Container ref={dataRef}>
-      <PageTitle title={title} subtitle={subtitle}/>
-      <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" data-html2canvas-ignore>
-        <ToggleButtonGroup
-          value={statTypes}
-          onChange={onChangeType}
-          aria-label="type-selector"
-          size="small"
-        >
-          <ToggleButton value="B" aria-label="Batting">Batting</ToggleButton>
-          <ToggleButton value="P" aria-label="Pitching">Pitching</ToggleButton>
-        </ToggleButtonGroup>
+    <React.Fragment>
+      <ShareModal title={title} canvasURL={canvasURL} open={modalOpen} onClose={handleModalClose} />
+      <Container ref={canvasRef} sx={{py: 2}}>
+        <PageTitle title={title} subtitle={subtitle}/>
+        <Stack direction="row" spacing={2} alignItems="center" data-html2canvas-ignore>
+          <ToggleButtonGroup
+            value={statTypes}
+            onChange={onChangeType}
+            aria-label="type-selector"
+          >
+            <ToggleButton value="B" aria-label="Batting">Batting</ToggleButton>
+            <ToggleButton value="P" aria-label="Pitching">Pitching</ToggleButton>
+          </ToggleButtonGroup>
 
-        <Button variant="contained" disableElevation size="medium" sx={{bgcolor: "primary.main"}}
-          onClick={onShare}>
-          Export
-        </Button>
-      </Stack>
+          <Box sx={{display: 'flex', flexGrow: 1}}></Box>
+          <Button variant="contained" disableElevation size="large" sx={{bgcolor: "primary.main"}}
+            onClick={onShare}>
+            Export
+          </Button>
+        </Stack>
 
-      <Modal
-        open={modalOpen}
-        onClose={handleModalClose}
-      >
-        <Box display="flex" flexDirection="column" alignItems="center"
-          sx={{position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
-                  width: "50%", bgcolor: "background.default", boxShadow: 24, p: 4}}>
-
-          <Box component="img" alt="share-canvas" src={canvasURL}
-            sx={{width: "80%", mb: 2, borderRadius: '4px', boxShadow: 2}}
-          />
-          <Stack direction="row" spacing={2} alignItems="center" justifyContent="center">
-            <Button variant="contained" onClick={() => onDownloadImg(title)}>Download</Button>
-          </Stack>
-        </Box>
-      </Modal>
-
-      {fetching ?
-        <FetchingText /> :
-        <TableContainer component={Paper} sx={{my: 2}}>
-          <Table sx={{ minWidth: 700, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{minWidth: 70, maxWidth: 100}}> </TableCell>
-                {teams.map((team) =>
-                  <TableCell align="right" sx={{minWidth: 70}} key={team.team_id}>{team.name}</TableCell>
-                )}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {statCate.filter(stat => statTypes.includes(stat.position_type))
-                .map((stat) => (
+        {fetching ?
+          <FetchingText /> :
+          <TableContainer component={Paper} sx={{my: 2}}>
+            <Table sx={{ minWidth: 700, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{minWidth: 70, maxWidth: 100}}> </TableCell>
+                  {teams.map((team) =>
+                    <TableCell align="right" sx={{minWidth: 70}} key={team.team_id}>{team.name}</TableCell>
+                  )}
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {statCate.filter(stat => statTypes.includes(stat.position_type))
+                  .map((stat) => (
+                  <TableRow
+                    key={stat.stat_id}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <TableCell align="right" component="th" scope="row">
+                      {stat.display_name}
+                    </TableCell>
+                    {Object.keys(stats).map((teamID) => {
+                      const s = stats[teamID][stat.stat_id]
+                      return <TableCell align="right" key={teamID}>{`${s.win}-${s.lose}-${s.tie}`}</TableCell>
+                    })}
+                  </TableRow>
+                ))}
                 <TableRow
-                  key={stat.stat_id}
                   sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
                 >
                   <TableCell align="right" component="th" scope="row">
-                    {stat.display_name}
+                    Sum
                   </TableCell>
-                  {Object.keys(stats).map((teamID) => {
-                    const s = stats[teamID][stat.stat_id]
-                    return <TableCell align="right" key={teamID}>{`${s.win}-${s.lose}-${s.tie}`}</TableCell>
-                  })}
+                  {teams.map(team =>
+                    <TableCell align="right" key={team.team_id}>
+                      {`${calStats.sum[team.team_id].win}-${calStats.sum[team.team_id].lose}-${calStats.sum[team.team_id].tie}`}
+                    </TableCell>
+                  )}
                 </TableRow>
-              ))}
-              <TableRow
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell align="right" component="th" scope="row">
-                  Sum
-                </TableCell>
-                {teams.map(team =>
-                  <TableCell align="right" key={team.team_id}>
-                    {`${calStats.sum[team.team_id].win}-${calStats.sum[team.team_id].lose}-${calStats.sum[team.team_id].tie}`}
+                <TableRow
+                  sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                >
+                  <TableCell align="right" component="th" scope="row">
+                    Rank
                   </TableCell>
-                )}
-              </TableRow>
-              <TableRow
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell align="right" component="th" scope="row">
-                  Rank
-                </TableCell>
-                {teams.map(team =>
-                  <TableCell align="right" key={team.team_id}>
-                    {calStats.rank[team.team_id]}
-                  </TableCell>
-                )}
-              </TableRow>
+                  {teams.map(team =>
+                    <TableCell align="right" key={team.team_id}>
+                      {calStats.rank[team.team_id]}
+                    </TableCell>
+                  )}
+                </TableRow>
 
-            </TableBody>
-          </Table>
-        </TableContainer>
-      }
-    </Container>
+              </TableBody>
+            </Table>
+          </TableContainer>
+        }
+      </Container>
+    </React.Fragment>
   )
 }
 

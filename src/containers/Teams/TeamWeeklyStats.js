@@ -1,7 +1,11 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTheme } from '@mui/material/styles';
+import html2canvas from 'html2canvas';
 
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -17,11 +21,14 @@ import Typography from '@mui/material/Typography';
 
 import FetchingText from '../../components/FetchingText.js';
 import PageTitle from '../../components/PageTitle.js';
+import ShareModal from '../../components/ShareModal.js';
 import { composite_stats, composite_stats_formula } from '../../utils/composite_stats.js';
 import { selectLeague, selectTeams, selectStatCate, selectStatCateFull, selectGameWeeks } from '../metadataSlice.js';
 import { setTeam, fetchDailyStats, selectDailyStats, selectDailyRoster, dailyStatsIsLoading as isLoading } from './teamsSlice.js';
 
 function TeamWeeklyStats(props) {
+  const theme = useTheme();
+  const canvasRef = useRef(null);
   const { team } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -39,6 +46,8 @@ function TeamWeeklyStats(props) {
   const [week, setWeek] = useState(league.current_week);
   const [types, setTypes] = useState(['Roster']);  // 'Roster', 'BN', 'IL', 'NA'
   const [compStatFormat, setCompStatFormat] = useState('value');  // 'value', 'raw'
+  const [modalOpen, setModalOpen] = useState(false);
+  const [canvasURL, setCanvasURL] = useState('');
 
   const dates = useMemo(() => {
     const dates = []
@@ -174,105 +183,126 @@ function TeamWeeklyStats(props) {
     setCompStatFormat(e.target.value);
   }
 
-  return (
-    <Container>
-      <PageTitle title="Weekly Stats" subtitle={`Week ${week} stats by date of team ${teams.find(t => t.team_id === Number(team)).name}`}/>
-      <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
-        <FormControl variant="filled" sx={{ minWidth: 160 }}>
-          <InputLabel id="team-label">Team</InputLabel>
-          <Select
-            labelId="team-label"
-            id="team-selector"
-            value={team}
-            onChange={onSelectTeam}
-          >
-            {teams.map(t => (
-              <MenuItem value={t.team_id} key={t.team_id}>{t.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl variant="filled" sx={{ minWidth: 80 }}>
-          <InputLabel id="week-label">Week</InputLabel>
-          <Select
-            labelId="week-label"
-            id="week-selector"
-            value={week}
-            onChange={onSelectWeek}
-          >
-            {[...Array(league.current_week-league.start_week+1).keys()].map(i => (
-              <MenuItem value={i+league.start_week} key={i+league.start_week}>{i+league.start_week}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <ToggleButtonGroup
-          value={types}
-          onChange={onChangeType}
-          aria-label="type-selector"
-        >
-          <ToggleButton value="Roster" aria-label="Roster">Roster</ToggleButton>
-          <ToggleButton value="BN" aria-label="BN">BN</ToggleButton>
-          <ToggleButton value="IL" aria-label="IL">IL</ToggleButton>
-          <ToggleButton value="NA" aria-label="NA">NA</ToggleButton>
-        </ToggleButtonGroup>
-        <ToggleButtonGroup
-          value={compStatFormat}
-          exclusive
-          onChange={onChangeCompStatsFormat}
-          aria-label="comp-stats-format"
-        >
-          <ToggleButton value="value" aria-label="value">Value</ToggleButton>
-          <ToggleButton value="raw" aria-label="raw">Raw</ToggleButton>
-        </ToggleButtonGroup>
-      </Stack>
+  const onShare = async () => {
+    const canvas = await html2canvas(canvasRef.current, {backgroundColor: theme.palette.background.default});
+    const image = canvas.toDataURL("image/png", 1.0);
+    setCanvasURL(image);
+    setModalOpen(true);
+  }
 
-      {fetching ?
-        <FetchingText /> :
-        <TableContainer component={Paper} sx={{ my: 2 }}>
-          <Table sx={{ minWidth: 700, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{minWidth: 70, maxWidth: 100}}> </TableCell>
-                {dates.map(date => (
-                  <TableCell align="right" sx={{minWidth: 70}} key={date}>{date}</TableCell>
-                ))}
-                <TableCell sx={{minWidth: 70, maxWidth: 100}}>Total</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {statCate.map((stat) => (
-                <TableRow
-                  key={stat.stat_id}
-                  sx={{ '&:last-child td, &:last-child th': { border: 0 }, bgcolor: stat.is_only_display_stat ? `background.paperDark` : null}}
-                >
-                  <TableCell align="right" component="th" scope="row">
-                    {compStatFormat === "raw" && statCateFull.find(s => s.stat_id === stat.stat_id).is_composite_stat ? (
-                      <Tooltip title={composite_stats_formula(stat.stat_id)}>
-                        <Typography variant="span">{stat.display_name}</Typography>
-                      </Tooltip>
-                    ) : stat.display_name}
-                  </TableCell>
-                  {dates.map(date => (
-                    <TableCell align="right" key={date}>
-                      {dailyStats[date] ? (
-                        isNaN(dailyStats[date][stat.stat_id]) ?
-                        dailyStats[date][stat.stat_id] || 'NaN' :
-                        Math.round(dailyStats[date][stat.stat_id]*100)/100
-                      ) : null}
-                    </TableCell>
-                  ))}
-                  <TableCell>
-                    {isNaN(weeklyStats[stat.stat_id]) ?
-                      weeklyStats[stat.stat_id] || 'NaN':
-                      Math.round(weeklyStats[stat.stat_id]*100)/100
-                    }
-                  </TableCell>
-                </TableRow>
+  const handleModalClose = () => setModalOpen(false);
+
+  const title = "Weekly Stats";
+  const subtitle = `Week ${week} stats by date of team ${teams.find(t => t.team_id === Number(team)).name}`;
+
+  return (
+    <React.Fragment>
+      <ShareModal title={title} canvasURL={canvasURL} open={modalOpen} onClose={handleModalClose} />
+      <Container ref={canvasRef} sx={{py: 2}}>
+        <PageTitle title={title} subtitle={subtitle}/>
+        <Stack direction="row" spacing={2} alignItems="center" data-html2canvas-ignore>
+          <FormControl variant="filled" sx={{ minWidth: 160 }}>
+            <InputLabel id="team-label">Team</InputLabel>
+            <Select
+              labelId="team-label"
+              id="team-selector"
+              value={team}
+              onChange={onSelectTeam}
+            >
+              {teams.map(t => (
+                <MenuItem value={t.team_id} key={t.team_id}>{t.name}</MenuItem>
               ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      }
-    </Container>
+            </Select>
+          </FormControl>
+          <FormControl variant="filled" sx={{ minWidth: 80 }}>
+            <InputLabel id="week-label">Week</InputLabel>
+            <Select
+              labelId="week-label"
+              id="week-selector"
+              value={week}
+              onChange={onSelectWeek}
+            >
+              {[...Array(league.current_week-league.start_week+1).keys()].map(i => (
+                <MenuItem value={i+league.start_week} key={i+league.start_week}>{i+league.start_week}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <ToggleButtonGroup
+            value={types}
+            onChange={onChangeType}
+            aria-label="type-selector"
+          >
+            <ToggleButton value="Roster" aria-label="Roster">Roster</ToggleButton>
+            <ToggleButton value="BN" aria-label="BN">BN</ToggleButton>
+            <ToggleButton value="IL" aria-label="IL">IL</ToggleButton>
+            <ToggleButton value="NA" aria-label="NA">NA</ToggleButton>
+          </ToggleButtonGroup>
+          <ToggleButtonGroup
+            value={compStatFormat}
+            exclusive
+            onChange={onChangeCompStatsFormat}
+            aria-label="comp-stats-format"
+          >
+            <ToggleButton value="value" aria-label="value">Value</ToggleButton>
+            <ToggleButton value="raw" aria-label="raw">Raw</ToggleButton>
+          </ToggleButtonGroup>
+
+          <Box sx={{display: 'flex', flexGrow: 1}}></Box>
+          <Button variant="contained" disableElevation size="large" sx={{bgcolor: "primary.main"}}
+            onClick={onShare}>
+            Export
+          </Button>
+        </Stack>
+
+        {fetching ?
+          <FetchingText /> :
+          <TableContainer component={Paper} sx={{ my: 2 }}>
+            <Table sx={{ minWidth: 700, 'th': {fontWeight: 'bold'}}} size="small" aria-label="stat-table">
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={{minWidth: 70, maxWidth: 100}}> </TableCell>
+                  {dates.map(date => (
+                    <TableCell align="right" sx={{minWidth: 70}} key={date}>{date}</TableCell>
+                  ))}
+                  <TableCell sx={{minWidth: 70, maxWidth: 100}}>Total</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {statCate.map((stat) => (
+                  <TableRow
+                    key={stat.stat_id}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 }, bgcolor: stat.is_only_display_stat ? `background.paperDark` : null}}
+                  >
+                    <TableCell align="right" component="th" scope="row">
+                      {compStatFormat === "raw" && statCateFull.find(s => s.stat_id === stat.stat_id).is_composite_stat ? (
+                        <Tooltip title={composite_stats_formula(stat.stat_id)}>
+                          <Typography variant="span">{stat.display_name}</Typography>
+                        </Tooltip>
+                      ) : stat.display_name}
+                    </TableCell>
+                    {dates.map(date => (
+                      <TableCell align="right" key={date}>
+                        {dailyStats[date] ? (
+                          isNaN(dailyStats[date][stat.stat_id]) ?
+                          dailyStats[date][stat.stat_id] || 'NaN' :
+                          Math.round(dailyStats[date][stat.stat_id]*100)/100
+                        ) : null}
+                      </TableCell>
+                    ))}
+                    <TableCell>
+                      {isNaN(weeklyStats[stat.stat_id]) ?
+                        weeklyStats[stat.stat_id] || 'NaN':
+                        Math.round(weeklyStats[stat.stat_id]*100)/100
+                      }
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        }
+      </Container>
+    </React.Fragment>
   )
 }
 

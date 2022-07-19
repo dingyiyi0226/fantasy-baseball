@@ -1,6 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTheme } from '@mui/material/styles';
+import html2canvas from 'html2canvas';
 
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
 import FormControl from '@mui/material/FormControl';
 import Grid from '@mui/material/Grid';
@@ -20,11 +24,14 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { to_local_date } from '../../utils/timezone.js';
 import FetchingText from '../../components/FetchingText.js';
 import PageTitle from '../../components/PageTitle.js';
+import ShareModal from '../../components/ShareModal.js';
 import { selectGameWeeks, selectLeague, selectTeams } from '../metadataSlice.js';
 import { fetchTransactions, selectTransactions, isLoading } from './transactionsSlice.js';
 
 
 function Transactions(props) {
+  const theme = useTheme();
+  const canvasRef = useRef(null);
   const dispatch = useDispatch();
   const gameWeeks = useSelector(state => selectGameWeeks(state));
   const league = useSelector(state => selectLeague(state));
@@ -34,6 +41,8 @@ function Transactions(props) {
   const transactionsRaw = useSelector(state => selectTransactions(state));  // [transactions]
 
   const [week, setWeek] = useState(league.current_week);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [canvasURL, setCanvasURL] = useState('');
 
   useEffect(() => {
     dispatch(fetchTransactions(teams.map(t => t.team_id)));
@@ -225,63 +234,84 @@ function Transactions(props) {
     setWeek(e.target.value);
   }
 
+  const onShare = async () => {
+    const canvas = await html2canvas(canvasRef.current, {backgroundColor: theme.palette.background.default});
+    const image = canvas.toDataURL("image/png", 1.0);
+    setCanvasURL(image);
+    setModalOpen(true);
+  }
+
+  const handleModalClose = () => setModalOpen(false);
+
+  const title = "Transactions";
+  const subtitle = week === 0 ? "All transactions before the season start": `All transactions of week ${week}`;
+
   return (
-    <Container>
-      <PageTitle title="Transactions" subtitle={week === 0 ? "All transactions before the season start": `All transactions of week ${week}`}/>
-      <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-start">
-        <FormControl variant="filled" sx={{ minWidth: 80 }}>
-          <InputLabel id="week-label">Week</InputLabel>
-          <Select
-            labelId="week-label"
-            id="week-selector"
-            value={week}
-            onChange={onSelectWeek}
-          >
-            <MenuItem value={0}>Pre-season</MenuItem>
-            {[...Array(league.current_week-league.start_week+1).keys()].map(i => (
-              <MenuItem value={i+league.start_week} key={i+league.start_week}>{i+league.start_week}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-      </Stack>
+    <React.Fragment>
+      <ShareModal title={title} canvasURL={canvasURL} open={modalOpen} onClose={handleModalClose} />
+      <Container ref={canvasRef} sx={{py: 2}}>
+        <PageTitle title={title} subtitle={subtitle}/>
+        <Stack direction="row" spacing={2} alignItems="center" data-html2canvas-ignore>
+          <FormControl variant="filled" sx={{ minWidth: 80 }}>
+            <InputLabel id="week-label">Week</InputLabel>
+            <Select
+              labelId="week-label"
+              id="week-selector"
+              value={week}
+              onChange={onSelectWeek}
+            >
+              <MenuItem value={0}>Pre-season</MenuItem>
+              {[...Array(league.current_week-league.start_week+1).keys()].map(i => (
+                <MenuItem value={i+league.start_week} key={i+league.start_week}>{i+league.start_week}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-      {fetching ?
-        <FetchingText /> : (
-          <Grid container spacing={2} sx={{my: 1}}>
-            {[...teams].sort((a, b) => weekTransactions[b.team_id].length - weekTransactions[a.team_id].length)
-              .map(team => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={team.team_id}>
-                <TableContainer component={Paper}>
-                  <Table size="small" sx={{'th': {fontWeight: 'bold'}}} aria-label="team-table">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell align="center" colSpan={4}>{team.name}</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {weekTransactions[team.team_id].map(tran => (
-                        <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 }}} key={tran.transaction_id}>
-                          <TableCell align="center" colSpan={4} sx={{bgcolor: tran.status === 'vetoed' ? `background.paperDark` : null}}>
-                            {transactionCell(tran, team.team_key)}
-                          </TableCell>
+          <Box sx={{display: 'flex', flexGrow: 1}}></Box>
+          <Button variant="contained" disableElevation size="large" sx={{bgcolor: "primary.main"}}
+            onClick={onShare}>
+            Export
+          </Button>
+        </Stack>
+
+        {fetching ?
+          <FetchingText /> : (
+            <Grid container spacing={2} sx={{my: 1}}>
+              {[...teams].sort((a, b) => weekTransactions[b.team_id].length - weekTransactions[a.team_id].length)
+                .map(team => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={team.team_id}>
+                  <TableContainer component={Paper}>
+                    <Table size="small" sx={{'th': {fontWeight: 'bold'}}} aria-label="team-table">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell align="center" colSpan={4}>{team.name}</TableCell>
                         </TableRow>
-                      ))}
-                      <TableRow sx={{'&:last-child td, &:last-child th': { border: 0 }}}>
-                        <TableCell align="right" sx={{fontWeight: 'bold'}}>Add</TableCell>
-                        <TableCell align="left" sx={{fontWeight: 'bold'}}>{transactionSum(weekTransactions[team.team_id]).add}</TableCell>
-                        <TableCell align="right" sx={{fontWeight: 'bold'}}>Drop</TableCell>
-                        <TableCell align="left" sx={{fontWeight: 'bold'}}>{transactionSum(weekTransactions[team.team_id]).drop}</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Grid>
-            ))}
-          </Grid>
-        )
-      }
+                      </TableHead>
+                      <TableBody>
+                        {weekTransactions[team.team_id].map(tran => (
+                          <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 }}} key={tran.transaction_id}>
+                            <TableCell align="center" colSpan={4} sx={{bgcolor: tran.status === 'vetoed' ? `background.paperDark` : null}}>
+                              {transactionCell(tran, team.team_key)}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                        <TableRow sx={{'&:last-child td, &:last-child th': { border: 0 }}}>
+                          <TableCell align="right" sx={{fontWeight: 'bold'}}>Add</TableCell>
+                          <TableCell align="left" sx={{fontWeight: 'bold'}}>{transactionSum(weekTransactions[team.team_id]).add}</TableCell>
+                          <TableCell align="right" sx={{fontWeight: 'bold'}}>Drop</TableCell>
+                          <TableCell align="left" sx={{fontWeight: 'bold'}}>{transactionSum(weekTransactions[team.team_id]).drop}</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Grid>
+              ))}
+            </Grid>
+          )
+        }
 
-    </Container>
+      </Container>
+    </React.Fragment>
   )
 }
 

@@ -26,4 +26,5 @@ yarn-error.log*
 
 api_test/
 configs/
+cert/
 todo.md
