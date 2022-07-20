@@ -17,11 +17,12 @@ const genBatch = (playerNum) => {
   return batch;
 }
 
-export const fetchPlayerRanking = createAsyncThunk('stats/fetchPlayerRanking', async (playerNum) => {
+export const fetchPlayerRanking = createAsyncThunk('stats/fetchPlayerRanking', async (payload) => {
+  const {sort, type, playerNum} = payload;
   const batch = genBatch(playerNum);
   const players = {};
   await Promise.all(batch.map(async (b) => {
-    const results = await apis.getPlayersByActualRanking(b.start, b.count);
+    const results = await apis.getPlayersByRanking(sort, type, b.start, b.count);
     results.forEach((player, idx) => {
       players[b.start+idx+1] = player;
     })

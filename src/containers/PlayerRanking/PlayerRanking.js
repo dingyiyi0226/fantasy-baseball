@@ -14,11 +14,12 @@ import Paper from '@mui/material/Paper';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import Typography from '@mui/material/Typography';
 
 import FetchingText from '../../components/FetchingText.js';
 import PageTitle from '../../components/PageTitle.js';
 import ShareModal from '../../components/ShareModal.js';
-import { selectTeams } from '../metadataSlice.js';
+import { selectTeams, selectStatCate } from '../metadataSlice.js';
 import { fetchPlayerRanking, selectPlayerRanking, isLoading } from './playerRankingSlice.js';
 
 function PlayerRanking(props) {
@@ -26,17 +27,20 @@ function PlayerRanking(props) {
   const canvasRef = useRef(null);
   const dispatch = useDispatch();
   const teams = useSelector(state => selectTeams(state));
+  const statCate = useSelector(state => selectStatCate(state));
 
   const fetching = useSelector(state => isLoading(state));
   const players = useSelector(state => selectPlayerRanking(state)); // {<rank>: player}
 
   const [playerNum, setPlayerNum] = useState(50);
+  const [sortStat, setSortStat] = useState('AR');  // 'AR', <stat_id>
+  const [sortType, setSortType] = useState('season');  // 'season', 'lastweek', 'lastmonth'
   const [modalOpen, setModalOpen] = useState(false);
   const [canvasURL, setCanvasURL] = useState('');
 
   useEffect(() => {
-    dispatch(fetchPlayerRanking(playerNum));
-  }, [dispatch, playerNum])
+    dispatch(fetchPlayerRanking({sort: sortStat, type: sortType, playerNum: playerNum}));
+  }, [dispatch, sortStat, sortType, playerNum])
 
   const teamPlayers = useMemo(() => {
     // {[team]: {[rank]: player}}
@@ -63,6 +67,14 @@ function PlayerRanking(props) {
     setPlayerNum(e.target.value);
   }
 
+  const onSelectSortStat = (e) => {
+    setSortStat(e.target.value);
+  }
+
+  const onSelectSortType = (e) => {
+    setSortType(e.target.value);
+  }
+
   const onShare = async () => {
     const canvas = await html2canvas(canvasRef.current, {backgroundColor: theme.palette.background.default, windowWidth: 1400});
     const image = canvas.toDataURL("image/png", 1.0);
@@ -72,8 +84,20 @@ function PlayerRanking(props) {
 
   const handleModalClose = () => setModalOpen(false);
 
+  const sortStatName = sortStat !== 'AR' ? statCate.find(s => s.stat_id === sortStat).display_name : undefined;
+  const sortStatDisplay = sortStat === 'AR' ? 'players' : `${statCate.find(s => s.stat_id === sortStat).display_name} leaders`;
+  const sortTypeDisplay = () => {
+    if (sortType === 'season') {
+      return 'in this season';
+    } else if (sortType === 'lastweek') {
+      return 'last week';
+    } else {
+      return 'last month';
+    }
+  }
+
   const title = "Player Ranking";
-  const subtitle = `Top ${playerNum} players in this season`;
+  const subtitle = `Top ${playerNum} ${sortStatDisplay} ${sortTypeDisplay()}`;
 
   return (
     <React.Fragment>
@@ -89,11 +113,39 @@ function PlayerRanking(props) {
               value={playerNum}
               onChange={onSelectPlayerNum}
             >
-              <MenuItem value={25} key={25}>{25}</MenuItem>
-              <MenuItem value={50} key={50}>{50}</MenuItem>
-              <MenuItem value={100} key={100}>{100}</MenuItem>
-              <MenuItem value={200} key={200}>{200}</MenuItem>
-              <MenuItem value={400} key={400}>{400}</MenuItem>
+              <MenuItem value={25}>{25}</MenuItem>
+              <MenuItem value={50}>{50}</MenuItem>
+              <MenuItem value={100}>{100}</MenuItem>
+              <MenuItem value={200}>{200}</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl variant="filled" sx={{ minWidth: 120 }}>
+            <InputLabel id="stat-label">Stat</InputLabel>
+            <Select
+              labelId="stat-label"
+              id="stat-selector"
+              value={sortStat}
+              onChange={onSelectSortStat}
+            >
+              <MenuItem value='AR'>Season Rank</MenuItem>
+              {statCate.map(s =>
+                <MenuItem value={s.stat_id} key={s.stat_id}>{s.display_name}</MenuItem>
+              )}
+            </Select>
+          </FormControl>
+
+          <FormControl variant="filled" sx={{ minWidth: 120 }}>
+            <InputLabel id="type-label">Sort Type</InputLabel>
+            <Select
+              labelId="type-label"
+              id="type-selector"
+              value={sortType}
+              onChange={onSelectSortType}
+            >
+              <MenuItem value="season">Season</MenuItem>
+              <MenuItem value="lastweek">Last Week</MenuItem>
+              <MenuItem value="lastmonth">Last Month</MenuItem>
             </Select>
           </FormControl>
 
@@ -116,21 +168,24 @@ function PlayerRanking(props) {
                           <TableCell align="center" colSpan={2}>{team.name}</TableCell>
                         </TableRow>
                         <TableRow>
-                          <TableCell align="center">Rank</TableCell>
-                          <TableCell align="left">Player</TableCell>
+                          <TableCell align="center" sx={{pr: 1}}>Rank</TableCell>
+                          <TableCell align="left" sx={{p: 1}}>Player</TableCell>
                         </TableRow>
                       </TableHead>
                       <TableBody>
                         {Object.keys(teamPlayers[team.team_id]).map(rank => (
                           <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 }}} key={rank}>
-                            <TableCell align="center">{rank}</TableCell>
-                            <TableCell align="left">{teamPlayers[team.team_id][rank].name.full}</TableCell>
-
+                            <TableCell align="center" sx={{fontSize: '0.8rem', pr: 1}}>{rank}</TableCell>
+                            <TableCell align="left" sx={{fontSize: '0.7rem', p: 1}}>{teamPlayers[team.team_id][rank].name.full}</TableCell>
                           </TableRow>
                         ))}
                         <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 }}}>
-                          <TableCell align="center" sx={{fontWeight: 'bold'}}>Total</TableCell>
-                          <TableCell align="left" sx={{fontWeight: 'bold'}}>{Object.keys(teamPlayers[team.team_id]).length}</TableCell>
+                          <TableCell align="center" colSpan={2} sx={{fontWeight: 'bold'}}>
+                            <Stack direction="row" spacing={4} alignItems="center" justifyContent="center">
+                              <Typography variant="body">Total</Typography>
+                              <Typography variant="body">{Object.keys(teamPlayers[team.team_id]).length}</Typography>
+                            </Stack>
+                          </TableCell>
                         </TableRow>
                       </TableBody>
                     </Table>
