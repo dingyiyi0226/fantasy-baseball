@@ -31,10 +31,12 @@ async function makeAPIrequest(url) {
         && err.response.data.error.description.includes("token_expired")){
       await refreshToken();
       return makeAPIrequest(url);
+    } else if (err.response.status === 999){
+      alert('Hit the Yahoo API rate limit. Please wait for an hour or deploy the website on your own. The instructions can be found on GitHub');
     } else {
       console.error(`Error in makeAPIrequest(): ${err.response.data}`);
     }
-    return err;
+    throw err;
   }
 }
 
