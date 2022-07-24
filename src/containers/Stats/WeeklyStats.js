@@ -224,43 +224,44 @@ function WeeklyStats(props) {
                         }
                       </TableRow>
                     ))}
-                    <TableRow
-                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                    >
-                      <TableCell align="right" component="th" scope="row">
-                        Avg. Rank
-                      </TableCell>
-                      {teams.map(team =>
-                        <TableCell align="right" key={team.team_id}>
-                          {rankAvg[team.team_id]}
+                    {type === 'rank' ? (
+                      <TableRow
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      >
+                        <TableCell align="right" component="th" scope="row">
+                          Avg. Rank
                         </TableCell>
-                      )}
-                    </TableRow>
-                    <TableRow
-                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                    >
-                      <TableCell align="right" component="th" scope="row">
-                        Win/Loss
-                      </TableCell>
-                      {teams.map(team => {
-                        if (searchParams.get('week') >= league.current_week) {
-                          return <TableCell align="right" key={team.team_id}> N/A </TableCell>
-                        }
-                        const tied_keys = []
-                        matchups.filter(matchup => matchup.is_tied)
-                          .forEach(matchup => {
-                            tied_keys.push(...matchup.teams.team.map(team => team.team_key))
-                          })
-                        const winner_keys = matchups.map(matchup => matchup.winner_team_key)
-                        if (tied_keys.includes(team.team_key)) {
-                          return <TableCell align="right" key={team.team_id}> T </TableCell>
-                        } else if (winner_keys.includes(team.team_key)) {
-                          return <TableCell align="right" key={team.team_id}> W </TableCell>
-                        } else {
-                          return <TableCell align="right" key={team.team_id}> L </TableCell>
-                        }
-                      })}
-                    </TableRow>
+                        {teams.map(team =>
+                          <TableCell align="right" key={team.team_id}>
+                            {rankAvg[team.team_id]}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ) : null}
+                    {searchParams.get('week') < league.current_week ? (
+                      <TableRow
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      >
+                        <TableCell align="right" component="th" scope="row">
+                          Win/Loss
+                        </TableCell>
+                        {teams.map(team => {
+                          const tied_keys = []
+                          matchups.filter(matchup => matchup.is_tied)
+                            .forEach(matchup => {
+                              tied_keys.push(...matchup.teams.team.map(team => team.team_key))
+                            })
+                          const winner_keys = matchups.map(matchup => matchup.winner_team_key)
+                          if (tied_keys.includes(team.team_key)) {
+                            return <TableCell align="right" key={team.team_id}> T </TableCell>
+                          } else if (winner_keys.includes(team.team_key)) {
+                            return <TableCell align="right" key={team.team_id}> W </TableCell>
+                          } else {
+                            return <TableCell align="right" key={team.team_id}> L </TableCell>
+                          }
+                        })}
+                      </TableRow>
+                    ) : null}
                   </TableBody>
                 </Table>
               </TableContainer>

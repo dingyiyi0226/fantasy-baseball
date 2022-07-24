@@ -264,18 +264,20 @@ function DailyStats() {
                         }
                       </TableRow>
                     ))}
-                    <TableRow
-                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                    >
-                      <TableCell align="right" component="th" scope="row">
-                        Avg. Rank
-                      </TableCell>
-                      {teams.map(team =>
-                        <TableCell align="right" key={team.team_id}>
-                          {rankAvg[team.team_id]}
+                    {type === 'rank' ? (
+                      <TableRow
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      >
+                        <TableCell align="right" component="th" scope="row">
+                          Avg. Rank
                         </TableCell>
-                      )}
-                    </TableRow>
+                        {teams.map(team =>
+                          <TableCell align="right" key={team.team_id}>
+                            {rankAvg[team.team_id]}
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ) : null}
                   </TableBody>
                 </Table>
               </TableContainer>
