@@ -30,7 +30,23 @@ function statsPreprocessing(statsRaw, statCate) {
 
   for (let [stat_id, stat] of Object.entries(statsT)){
     const sort_order = statCateKey[stat_id].sort_order === 0;
-    stat.sort((a, b) => sort_order ? a-b : b-a)
+    // '' equals to '0'  (temp)
+    // increasing: ['0', '1', '3', '-']
+    // decreasing: ['3', '1', '0', '-']
+
+    stat.sort((a, b) => {
+      if (a === '') {a = '0'}
+      if (b === '') {b = '0'}
+      if (isNaN(a) && isNaN(b)) {
+        return 0;
+      } else if (isNaN(a)) {
+        return Infinity;
+      } else if (isNaN(b)) {
+        return -Infinity;
+      } else {
+        return sort_order ? a-b : b-a;
+      }
+    })
   }
 
   Object.values(stats).forEach(teamStats => {
