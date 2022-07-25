@@ -128,7 +128,7 @@ function PlayerRanking(props) {
               value={sortStat}
               onChange={onSelectSortStat}
             >
-              <MenuItem value='AR'>Season Rank</MenuItem>
+              <MenuItem value='AR'>Rank</MenuItem>
               {statCate.map(s =>
                 <MenuItem value={s.stat_id} key={s.stat_id}>{s.display_name}</MenuItem>
               )}
