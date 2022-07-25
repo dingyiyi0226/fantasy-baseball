@@ -45,7 +45,7 @@ function Transactions(props) {
   const [canvasURL, setCanvasURL] = useState('');
 
   useEffect(() => {
-    dispatch(fetchTransactions(teams.map(t => t.team_id)));
+    dispatch(fetchTransactions(teams.length));
   }, [teams, dispatch])
 
   const transactions = useMemo(() => {

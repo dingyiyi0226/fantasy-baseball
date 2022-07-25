@@ -78,6 +78,12 @@ function Sidebar(props) {
           </Collapse>
 
           <ListItem disablePadding>
+            <ListItemButton component={Link} to="teamcompare">
+              <ListItemText primary="Team Compare" />
+            </ListItemButton>
+          </ListItem>
+
+          <ListItem disablePadding>
             <ListItemButton component={Link} to="player-ranking">
               <ListItemText primary="Player Ranking" />
             </ListItemButton>

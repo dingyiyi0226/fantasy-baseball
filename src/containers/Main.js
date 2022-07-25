@@ -13,6 +13,7 @@ import PlayerRanking from './PlayerRanking';
 import Sidebar from './Sidebar.js';
 import Stats from './Stats';
 import Teams from './Teams';
+import TeamCompare from './TeamCompare';
 import Transactions from './Transactions';
 
 import { fetchMetadata, selectGame, selectLeague, isLoading } from './metadataSlice.js';
@@ -46,9 +47,10 @@ function Main() {
               <Route index element=<Navigate to="home" replace={true} />/>
               <Route path="home" element={fetching ? <FetchingText /> : <LeagueHome />} />
               <Route path="stats/*" element={fetching ? <FetchingText /> : <Stats />} />
-              <Route path="teams/*" element={fetching ? <FetchingText /> : <Teams league={league} game={game}/>} />
-              <Route path="player-ranking" element={fetching ? <FetchingText /> : <PlayerRanking league={league} />} />
-              <Route path="transactions" element={fetching ? <FetchingText /> : <Transactions league={league} game={game}/>} />
+              <Route path="teams/*" element={fetching ? <FetchingText /> : <Teams />} />
+              <Route path="player-ranking" element={fetching ? <FetchingText /> : <PlayerRanking />} />
+              <Route path="transactions" element={fetching ? <FetchingText /> : <Transactions />} />
+              <Route path="teamcompare" element={fetching ? <FetchingText /> : <TeamCompare />} />
             </Route>
           </Routes>
         </Box>

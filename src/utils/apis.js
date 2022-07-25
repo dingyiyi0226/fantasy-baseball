@@ -64,6 +64,19 @@ const apis = {
     }
   },
 
+  async getTeamsAll(teamNum) {
+    try {
+      let team_keys = [...Array(teamNum).keys()].map(i => `${LEAGUE_KEY}.t.${i+1}`);
+
+      const query = `${baseURL}/teams;team_keys=${team_keys.join(',')};out=stats,standings,matchups`;
+      const results = await makeAPIrequest(query);
+      return results.teams.team;
+    } catch (err) {
+      console.error(`Error in getTeamsAll(): ${err}`);
+      return err;
+    }
+  },
+
   async getTeamsStatsByDate(teamNum, date) {
     try {
       let team_keys = [...Array(teamNum).keys()].map(i => `${LEAGUE_KEY}.t.${i+1}`);

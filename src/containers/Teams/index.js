@@ -11,9 +11,9 @@ function Teams(props) {
       <Route index element=<Navigate to="1/" replace={true} />/>
       <Route path=":team" >
         <Route index element=<Navigate to="weekly" replace={true} />/>
-        <Route path="weekly" element={<TeamWeeklyStats league={props.league} game={props.game}/>}/>
-        <Route path="seasonal" element={<TeamSeasonalStats league={props.league} game={props.game}/>}/>
-        <Route path="matchups" element={<TeamMatchups league={props.league} game={props.game}/>}/>
+        <Route path="weekly" element={<TeamWeeklyStats />}/>
+        <Route path="seasonal" element={<TeamSeasonalStats />}/>
+        <Route path="matchups" element={<TeamMatchups />}/>
       </Route>
     </Routes>
   )
