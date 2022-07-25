@@ -17,7 +17,7 @@ const genBatch = (playerNum) => {
   return batch;
 }
 
-export const fetchPlayerRanking = createAsyncThunk('stats/fetchPlayerRanking', async (payload) => {
+export const fetchPlayerRanking = createAsyncThunk('playerRanking/fetchPlayerRanking', async (payload) => {
   const {sort, type, playerNum} = payload;
   const batch = genBatch(playerNum);
   const players = {};
