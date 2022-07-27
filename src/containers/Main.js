@@ -16,14 +16,12 @@ import Teams from './Teams';
 import TeamCompare from './TeamCompare';
 import Transactions from './Transactions';
 
-import { fetchMetadata, selectGame, selectLeague, isLoading } from './metadataSlice.js';
+import { fetchMetadata, isLoading } from './metadataSlice.js';
 
 function Main() {
 
   const dispatch = useDispatch();
   const fetching = useSelector(state => isLoading(state));
-  const game = useSelector(state => selectGame(state));
-  const league = useSelector(state => selectLeague(state));
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
