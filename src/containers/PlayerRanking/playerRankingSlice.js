@@ -23,9 +23,18 @@ export const fetchPlayerRanking = createAsyncThunk('playerRanking/fetchPlayerRan
   const players = {};
   await Promise.all(batch.map(async (b) => {
     const results = await apis.getPlayersByRanking(sort, type, b.start, b.count);
-    results.forEach((player, idx) => {
-      players[b.start+idx+1] = player;
-    })
+    if (type === 'season' || sort === 'AR') {
+      results.forEach((player, idx) => {
+        players[b.start+idx+1] = player;
+      })
+    } else {
+      // the stats will always return seasonal stats, replace it if type !== season
+      const statsResults = await apis.getPlayersStatsByRanking(sort, type, b.start, b.count);
+      results.forEach((player, idx) => {
+        player.player_stats.stats.stat = statsResults[idx].player_stats.stats.stat;
+        players[b.start+idx+1] = player;
+      })
+    }
   }))
   return players;
 });

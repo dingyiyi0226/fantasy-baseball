@@ -211,6 +211,7 @@ const apis = {
     // sort: {stat_id}, AR, OR, PTS
     // type: season, lastweek, lastmonth, date
     // max count = 25
+    // the stats ALWAYS return season stats
 
     const query =  `${baseURL}/league/${LEAGUE_KEY}/players;sort=${sort};sort_type=${type};start=${start};count=${count};out=ownership,stats`;
 
@@ -218,7 +219,23 @@ const apis = {
       const results = await makeAPIrequest(query);
       return results.league.players.player;
     } catch (err) {
-      console.error(`Error in getPlayersByActualRanking(): ${err}`);
+      console.error(`Error in getPlayersByRanking(): ${err}`);
+      return err;
+    }
+  },
+
+  async getPlayersStatsByRanking(sort, type='season', start=0, count=25) {
+    // sort: {stat_id}, AR, OR, PTS
+    // type: lastweek, lastmonth
+    // max count = 25
+
+    const query =  `${baseURL}/league/${LEAGUE_KEY}/players;sort=${sort};sort_type=${type};start=${start};count=${count}/stats;type=${type}`;
+
+    try {
+      const results = await makeAPIrequest(query);
+      return results.league.players.player;
+    } catch (err) {
+      console.error(`Error in getPlayersStatsByRanking(): ${err}`);
       return err;
     }
   },

@@ -165,11 +165,14 @@ function PlayerRanking(props) {
                     <Table size="small" sx={{'th': {fontWeight: 'bold'}}} aria-label="team-table">
                       <TableHead>
                         <TableRow>
-                          <TableCell align="center" colSpan={2}>{team.name}</TableCell>
+                          <TableCell align="center" colSpan={sortStat === 'AR' ? 2 : 3}>{team.name}</TableCell>
                         </TableRow>
                         <TableRow>
                           <TableCell align="center" sx={{pr: 1}}>Rank</TableCell>
                           <TableCell align="left" sx={{p: 1}}>Player</TableCell>
+                          {sortStat === 'AR' ? null :
+                            <TableCell align="center" sx={{pl: 1}}>{sortStatName}</TableCell>
+                          }
                         </TableRow>
                       </TableHead>
                       <TableBody>
@@ -177,10 +180,15 @@ function PlayerRanking(props) {
                           <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 }}} key={rank}>
                             <TableCell align="center" sx={{fontSize: '0.8rem', pr: 1}}>{rank}</TableCell>
                             <TableCell align="left" sx={{fontSize: '0.7rem', p: 1}}>{teamPlayers[team.team_id][rank].name.full}</TableCell>
+                            {sortStat === 'AR' ? null :
+                              <TableCell align="center" sx={{fontSize: '0.8rem', pl: 1}}>
+                                {teamPlayers[team.team_id][rank].player_stats.stats.stat.find(s => s.stat_id === sortStat)?.value}
+                              </TableCell>
+                            }
                           </TableRow>
                         ))}
                         <TableRow sx={{ '&:last-child td, &:last-child th': { border: 0 }}}>
-                          <TableCell align="center" colSpan={2} sx={{fontWeight: 'bold'}}>
+                          <TableCell align="center" colSpan={sortStat === 'AR' ? 2 : 3} sx={{fontWeight: 'bold'}}>
                             <Stack direction="row" spacing={4} alignItems="center" justifyContent="center">
                               <Typography variant="body">Total</Typography>
                               <Typography variant="body">{Object.keys(teamPlayers[team.team_id]).length}</Typography>
