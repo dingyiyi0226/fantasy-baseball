@@ -85,7 +85,7 @@ function PlayerRanking(props) {
   const handleModalClose = () => setModalOpen(false);
 
   const sortStatName = sortStat !== 'AR' ? statCate.find(s => s.stat_id === sortStat).display_name : undefined;
-  const sortStatDisplay = sortStat === 'AR' ? 'players' : `${statCate.find(s => s.stat_id === sortStat).display_name} leaders`;
+  const sortStatDisplay = sortStat === 'AR' ? 'players' : `${statCate.find(s => s.stat_id === sortStat).name} leaders`;
   const sortTypeDisplay = () => {
     if (sortType === 'season') {
       return 'in this season';
