@@ -51,6 +51,7 @@ function Main() {
               <Route path="player-ranking" element={fetching ? <FetchingText /> : <PlayerRanking />} />
               <Route path="transactions" element={fetching ? <FetchingText /> : <Transactions />} />
               <Route path="teamcompare" element={fetching ? <FetchingText /> : <TeamCompare />} />
+              <Route path="*" element=<Navigate to="home" replace={true} />/>
             </Route>
           </Routes>
         </Box>

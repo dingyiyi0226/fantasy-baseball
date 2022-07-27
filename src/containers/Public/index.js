@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from'react-router-dom';
 
 import Box from '@mui/material/Box';
 
+import HomePage from './HomePage.js';
 import Login from './Login.js';
 import LoginRedirect from './LoginRedirect.js';
 import PublicHeader from './PublicHeader.js';
@@ -16,7 +17,8 @@ function Public(props) {
         <Route path="/">
           <Route index element=<Navigate to="login" replace={true} />/>
           <Route path="login" element=<Login/>/>
-          <Route path="home" element=<LoginRedirect/>/>
+          <Route path="redirect" element=<LoginRedirect/>/>
+          <Route path="home" element=<HomePage/>/>
           <Route path="*" element=<Navigate to="login" replace={true} />/>
         </Route>
       </Routes>
