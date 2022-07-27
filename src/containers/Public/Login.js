@@ -6,6 +6,8 @@ import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
+import yahooLogin from './yahoo_login.png';
+
 const oauth_link = `https://api.login.yahoo.com/oauth2/request_auth?client_id=${process.env.REACT_APP_CLIENT_ID}&redirect_uri=${process.env.REACT_APP_REDIRECT_URI}&response_type=code`;
 
 
@@ -20,7 +22,7 @@ function Login(props) {
           </Typography>
 
           <a href={oauth_link}>
-            <Box component="img" sx={{ width: 250 }} alt="yahoo-login" src={process.env.PUBLIC_URL+'/yahoo_login.png'}/>
+            <Box component="img" sx={{ width: 250 }} alt="yahoo-login" src={yahooLogin}/>
           </a>
           
         </Stack>
