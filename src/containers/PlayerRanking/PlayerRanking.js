@@ -90,9 +90,9 @@ function PlayerRanking(props) {
     if (sortType === 'season') {
       return 'in this season';
     } else if (sortType === 'lastweek') {
-      return 'last week';
+      return 'last 7 days';
     } else {
-      return 'last month';
+      return 'last 30 days';
     }
   }
 
@@ -144,8 +144,8 @@ function PlayerRanking(props) {
               onChange={onSelectSortType}
             >
               <MenuItem value="season">Season</MenuItem>
-              <MenuItem value="lastweek">Last Week</MenuItem>
-              <MenuItem value="lastmonth">Last Month</MenuItem>
+              <MenuItem value="lastweek">Last 7 Days</MenuItem>
+              <MenuItem value="lastmonth">Last 30 Days</MenuItem>
             </Select>
           </FormControl>
 
