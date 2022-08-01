@@ -13,16 +13,17 @@ function Public(props) {
   return (
     <Box sx={{display: 'flex', flexDirection: 'column',  minHeight: '100vh'}}>
       <PublicHeader />
-      <Routes>
-        <Route path="/">
-          <Route index element=<Navigate to="login" replace={true} />/>
-          <Route path="login" element=<Login/>/>
-          <Route path="redirect" element=<LoginRedirect/>/>
-          <Route path="home" element=<HomePage/>/>
-          <Route path="*" element=<Navigate to="login" replace={true} />/>
-        </Route>
-      </Routes>
-      <Box sx={{flexGrow: 1}}/>
+      <Box sx={{flexGrow: 1, p: 3}}>
+        <Routes>
+          <Route path="/">
+            <Route index element=<Navigate to="home" replace={true} />/>
+            <Route path="login" element=<Login/>/>
+            <Route path="redirect" element=<LoginRedirect/>/>
+            <Route path="home" element=<HomePage/>/>
+            <Route path="*" element=<Navigate to="home" replace={true} />/>
+          </Route>
+        </Routes>
+      </Box>
       <Footer />
     </Box>
   )
