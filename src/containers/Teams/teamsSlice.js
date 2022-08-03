@@ -32,17 +32,18 @@ export const fetchDailyStats = createAsyncThunk('teams/fetchDailyStats', async (
   return {stats: dailyStats, roster: dailyRoster};
 });
 
-export const fetchSeasonalStats = createAsyncThunk('teams/fetchSeasonalStats', async (payload) => {
-  const { team, weeks } = payload;
+export const fetchSeasonalStats = createAsyncThunk('teams/fetchSeasonalStats', async (payload, thunkAPI) => {
+  let { team, weeks } = payload;
+  const { getState } = thunkAPI;
+
+  weeks = weeks.filter(w => !(getState().teams.weeklyStats && w in getState().teams.weeklyStats));
   let weeklyStats = {};
-  const fetchWeeklyStats = async () => {
-    await Promise.all(weeks.map(async (week) => {
-      const stat = await apis.getTeamStatsByWeek(team, week);
-      weeklyStats[week] = stat;
-    }))
-  }
-  const [seasonalStats] = await Promise.all([apis.getTeamStatsBySeason(team), fetchWeeklyStats()])
-  return {weekly: weeklyStats, seasonal: seasonalStats};
+
+  await Promise.all(weeks.map(async (week) => {
+    const stat = await apis.getTeamStatsByWeek(team, week);
+    weeklyStats[week] = stat;
+  }))
+  return weeklyStats;
 });
 
 const teamsSlice = createSlice({
@@ -56,7 +57,6 @@ const teamsSlice = createSlice({
     dailyRoster: undefined,
     dailyStats: undefined,
     weeklyStats: undefined,
-    seasonalStats: undefined,
   },
   reducers: {
     setTeam: (state, action) => {
@@ -84,8 +84,7 @@ const teamsSlice = createSlice({
     })
 
     builder.addCase(fetchSeasonalStats.fulfilled, (state, action) => {
-      state.weeklyStats = action.payload.weekly;
-      state.seasonalStats = action.payload.seasonal;
+      state.weeklyStats = {...state.weeklyStats, ...action.payload};
       state.seasonalStatsIsLoading = false;
     }).addCase(fetchSeasonalStats.pending, (state, action) => {
       state.seasonalStatsIsLoading = true;
@@ -105,6 +104,5 @@ export const selectMatchups = (state) => state.teams.matchups;
 export const selectDailyStats = (state) => state.teams.dailyStats;
 export const selectDailyRoster = (state) => state.teams.dailyRoster;
 export const selectWeeklyStats = (state) => state.teams.weeklyStats;
-export const selectSeasonalStats = (state) => state.teams.seasonalStats;
 
 export default teamsSlice.reducer;

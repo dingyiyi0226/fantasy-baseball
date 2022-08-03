@@ -12,14 +12,17 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import Typography from '@mui/material/Typography';
 import Select from '@mui/material/Select';
+import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
 
 import FetchingText from '../../components/FetchingText.js';
 import PageTitle from '../../components/PageTitle.js';
 import ShareModal from '../../components/ShareModal.js';
 import { selectLeague, selectTeams, selectStatCate, selectGameWeeks } from '../metadataSlice.js';
-import { setTeam, fetchSeasonalStats, selectSeasonalStats, selectWeeklyStats, seasonalStatsIsLoading as isLoading } from './teamsSlice.js';
+import { setTeam, fetchSeasonalStats, selectWeeklyStats, seasonalStatsIsLoading as isLoading } from './teamsSlice.js';
+
 
 function TeamSeasonalStats(props) {
   const theme = useTheme();
@@ -35,14 +38,15 @@ function TeamSeasonalStats(props) {
 
   const fetching = useSelector(state => isLoading(state));
   const weeklyStats = useSelector(state => selectWeeklyStats(state));
-  const seasonalStats = useSelector(state => selectSeasonalStats(state));
 
+  const [weekRangeUI, setWeekRangeUI] = useState([league.current_week-7, league.current_week]);
+  const [weekRange, setWeekRange] = useState([league.current_week-7, league.current_week]);
   const [modalOpen, setModalOpen] = useState(false);
   const [canvasURL, setCanvasURL] = useState('');
 
   const weeks = useMemo(() =>
-    [...Array(league.current_week-league.start_week+1).keys()].map(i => i+league.start_week)
-  , [league])
+    [...Array(weekRange[1]-weekRange[0]+1).keys()].map(i => i+weekRange[0])
+  , [weekRange])
 
   useEffect(() => {
     if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
@@ -54,9 +58,10 @@ function TeamSeasonalStats(props) {
     if (isNaN(parseInt(team)) || parseInt(team) > teams.length || parseInt(team) === 0) {
       return;
     }
+    let weeks = [...Array(weekRange[1]-weekRange[0]+1).keys()].map(i => i+weekRange[0]);
     dispatch(setTeam(team));
     dispatch(fetchSeasonalStats({team: team, weeks: weeks}));
-  }, [team, teams, weeks, dispatch])
+  }, [team, teams, weekRange, dispatch])
 
   const onSelectTeam = (e) => {
     if (fetching) {
@@ -64,6 +69,14 @@ function TeamSeasonalStats(props) {
     }
     navigate(`/teams/${e.target.value}/seasonal`);
   }
+
+  const handleWeekRangeUI = (event, newWeekRange) => {
+    setWeekRangeUI(newWeekRange);
+  };
+
+  const handleWeekRange = (event, newWeekRange) => {
+    setWeekRange(newWeekRange);
+  };
 
   const onShare = async () => {
     const canvas = await html2canvas(canvasRef.current, {backgroundColor: theme.palette.background.default, windowWidth: 1400});
@@ -75,7 +88,7 @@ function TeamSeasonalStats(props) {
   const handleModalClose = () => setModalOpen(false);
 
   const title = "Seasonal Stats";
-  const subtitle = `Seasonal stats by week of team ${teams.find(t => t.team_id === Number(team)).name}`;
+  const subtitle = `Stats by week from week ${weekRange[0]} to week ${weekRange[1]} of team ${teams.find(t => t.team_id === Number(team)).name}`;
 
   return (
     <React.Fragment>
@@ -97,6 +110,23 @@ function TeamSeasonalStats(props) {
             </Select>
           </FormControl>
 
+          <Box width={200} sx={{px: 2}}>
+            <Slider
+              getAriaLabel={() => "Week range"}
+              value={weekRangeUI}
+              onChange={handleWeekRangeUI}
+              onChangeCommitted={handleWeekRange}
+              valueLabelDisplay="auto"
+              valueLabelFormat={(v) => `Week ${v}`}
+              size="small"
+              getAriaValueText={(v) => `Week ${v}`}
+              min={league.start_week}
+              max={league.current_week}
+              disableSwap
+              marks={[{value: 1, label: 'Week 1'}, {value: league.current_week, label: `Week ${league.current_week}`}]}
+            />
+          </Box>
+
           <Box sx={{display: 'flex', flexGrow: 1}}></Box>
           <Button variant="contained" disableElevation size="large" sx={{bgcolor: "primary.main"}}
             onClick={onShare}>
@@ -114,7 +144,6 @@ function TeamSeasonalStats(props) {
                   {weeks.map(week => (
                     <TableCell align="right" sx={{minWidth: 75}} key={week}>{`W. ${week}`}</TableCell>
                   ))}
-                  <TableCell sx={{minWidth: 70, maxWidth: 100}}>Total</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell></TableCell>
@@ -124,7 +153,6 @@ function TeamSeasonalStats(props) {
                       <TableCell align="right" key={week}>{`${Number(start.split('-')[1])}/${Number(start.split('-')[2])}`}</TableCell>
                     )
                   })}
-                  <TableCell></TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -138,12 +166,9 @@ function TeamSeasonalStats(props) {
                     </TableCell>
                     {weeks.map(week => (
                       <TableCell align="right" key={week}>
-                        {weeklyStats[week].find(s => s.stat_id === Number(stat.stat_id)).value}
+                        {weeklyStats[week] && weeklyStats[week].find(s => s.stat_id === Number(stat.stat_id)).value}
                       </TableCell>
                     ))}
-                    <TableCell>
-                      {seasonalStats.find(s => s.stat_id === Number(stat.stat_id)).value}
-                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
