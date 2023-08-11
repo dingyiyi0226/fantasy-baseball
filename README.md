@@ -2,6 +2,8 @@
 
 A fantasy baseball helper website to compare the stats of league and team
 
+The backend server is currently **UNAVAILABLE**. If you wish to deploy one, please follow the instructions provided in this [repository](https://github.com/dingyiyi0226/fantasy-baseball-backend).
+
 Website Link: [https://dingyiyi0226.github.io/fantasy-baseball](https://dingyiyi0226.github.io/fantasy-baseball)
 
 ## Demo
