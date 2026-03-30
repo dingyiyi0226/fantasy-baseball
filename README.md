@@ -1,9 +1,12 @@
 # Fantasy Baseball
 
-A fantasy baseball helper website to compare the stats of league and team
+A fantasy baseball dashboard for analyzing league and team performance — view daily, weekly, and seasonal stats alongside matchup results.
 
-Website Link: [https://dingyiyi0226.github.io/fantasy-baseball](https://dingyiyi0226.github.io/fantasy-baseball)
-Backend server repo: [https://github.com/dingyiyi0226/fantasy-baseball-backend](https://github.com/dingyiyi0226/fantasy-baseball-backend)
+> The backend is hosted on Render's free tier. Expect a short cold start delay on first load.
+
+**Live site:** [https://dingyiyi0226.github.io/fantasy-baseball](https://dingyiyi0226.github.io/fantasy-baseball)
+
+**Backend repo:** [https://github.com/dingyiyi0226/fantasy-baseball-backend](https://github.com/dingyiyi0226/fantasy-baseball-backend)
 
 ## Demo
 
