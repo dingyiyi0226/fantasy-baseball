@@ -21,11 +21,11 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 
 
-import FetchingText from '../../components/FetchingText.js';
-import PageTitle from '../../components/PageTitle.js';
-import ShareModal from '../../components/ShareModal.js';
-import { selectStatCate, selectTeams } from '../metadataSlice.js';
-import { fetchTeamsAll, selectTeamsAll, isLoading } from './teamCompareSlice.js';
+import FetchingText from '../../components/FetchingText';
+import PageTitle from '../../components/PageTitle';
+import ShareModal from '../../components/ShareModal';
+import { selectStatCate, selectTeams } from '../metadataSlice';
+import { fetchTeamsAll, selectTeamsAll, isLoading } from './teamCompareSlice';
 
 
 const SmallAvatar = styled(Avatar)(({ theme }) => ({

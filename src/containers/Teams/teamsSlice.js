@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import { apis } from '../../utils/apis.js';
+import { apis } from '../../utils/apis';
 
 export const fetchMatchups = createAsyncThunk('teams/fetchMatchups', async (team) => {
   const matchups = await apis.getTeamMatchupsUntilWeek(team);

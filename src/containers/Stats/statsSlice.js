@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import { apis } from '../../utils/apis.js';
+import { apis } from '../../utils/apis';
 
 
 export const fetchMatchupsByWeek = createAsyncThunk('stats/fetchMatchupsByWeek', async (week) => {

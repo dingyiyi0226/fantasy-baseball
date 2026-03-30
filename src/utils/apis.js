@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { XMLParser } from 'fast-xml-parser';
 
-import { getToken, refreshToken } from './auth.js';
+import { getToken, refreshToken } from './auth';
 
-const baseURL = `${process.env.REACT_APP_BACKEND_URL}/api`;
+const baseURL = `${import.meta.env.VITE_BACKEND_URL}/api`;
 let LEAGUE_KEY = '';
 
 async function makeAPIrequest(url) {

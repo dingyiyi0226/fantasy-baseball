@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import { apis } from '../../utils/apis.js';
+import { apis } from '../../utils/apis';
 
 export const fetchTransactions = createAsyncThunk('transactions/fetchTransactions', async (teamIDs) => {
   const transactions = await apis.getTransactions();

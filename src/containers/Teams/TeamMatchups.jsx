@@ -16,11 +16,11 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 
-import FetchingText from '../../components/FetchingText.js';
-import PageTitle from '../../components/PageTitle.js';
-import ShareModal from '../../components/ShareModal.js';
-import { selectTeams } from '../metadataSlice.js';
-import { setTeam, fetchMatchups, selectMatchups, matchupsIsLoading as isLoading } from './teamsSlice.js';
+import FetchingText from '../../components/FetchingText';
+import PageTitle from '../../components/PageTitle';
+import ShareModal from '../../components/ShareModal';
+import { selectTeams } from '../metadataSlice';
+import { setTeam, fetchMatchups, selectMatchups, matchupsIsLoading as isLoading } from './teamsSlice';
 
 
 function TeamMatchups(props) {

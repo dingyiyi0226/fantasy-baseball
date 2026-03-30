@@ -16,8 +16,8 @@ import Typography from '@mui/material/Typography';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import MenuIcon from '@mui/icons-material/Menu';
 
-import AuthContext from '../contexts/AuthContext.js';
-import { setLeagueKey, setGameKey, selectGame, selectLeague, selectGames, selectLeagues, isLoading } from './metadataSlice.js';
+import AuthContext from '../contexts/AuthContext';
+import { setLeagueKey, setGameKey, selectGame, selectLeague, selectGames, selectLeagues, isLoading } from './metadataSlice';
 
 
 function Header(props) {

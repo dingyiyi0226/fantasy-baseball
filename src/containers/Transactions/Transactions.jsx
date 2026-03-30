@@ -21,12 +21,12 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
-import { to_local_date } from '../../utils/timezone.js';
-import FetchingText from '../../components/FetchingText.js';
-import PageTitle from '../../components/PageTitle.js';
-import ShareModal from '../../components/ShareModal.js';
-import { selectGameWeeks, selectLeague, selectTeams } from '../metadataSlice.js';
-import { fetchTransactions, selectTransactions, isLoading } from './transactionsSlice.js';
+import { to_local_date } from '../../utils/timezone';
+import FetchingText from '../../components/FetchingText';
+import PageTitle from '../../components/PageTitle';
+import ShareModal from '../../components/ShareModal';
+import { selectGameWeeks, selectLeague, selectTeams } from '../metadataSlice';
+import { fetchTransactions, selectTransactions, isLoading } from './transactionsSlice';
 
 
 function Transactions(props) {

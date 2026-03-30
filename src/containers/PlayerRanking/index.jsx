@@ -1,6 +1,6 @@
 import React from 'react';
 
-import PlayerRanking from './PlayerRanking.js';
+import PlayerRanking from './PlayerRanking';
 
 function PlayerRankingWrapper(props) {
   return (

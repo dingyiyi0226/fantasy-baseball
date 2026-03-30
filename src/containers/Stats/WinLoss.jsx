@@ -12,11 +12,11 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
-import FetchingText from '../../components/FetchingText.js';
-import PageTitle from '../../components/PageTitle.js';
-import ShareModal from '../../components/ShareModal.js';
-import { selectLeague, selectTeams, selectStatCate } from '../metadataSlice.js';
-import { fetchMatchupsUntilWeek, selectAllMatchups, allMatchupsIsLoading as isLoading } from './statsSlice.js';
+import FetchingText from '../../components/FetchingText';
+import PageTitle from '../../components/PageTitle';
+import ShareModal from '../../components/ShareModal';
+import { selectLeague, selectTeams, selectStatCate } from '../metadataSlice';
+import { fetchMatchupsUntilWeek, selectAllMatchups, allMatchupsIsLoading as isLoading } from './statsSlice';
 
 
 function WinLoss() {

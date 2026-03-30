@@ -5,18 +5,18 @@ import { useSelector, useDispatch } from 'react-redux';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 
-import FetchingText from '../components/FetchingText.js';
-import Footer from '../components/Footer.js';
-import Header from './Header.js';
-import LeagueHome from './LeagueHome.js';
+import FetchingText from '../components/FetchingText';
+import Footer from '../components/Footer';
+import Header from './Header';
+import LeagueHome from './LeagueHome';
 import PlayerRanking from './PlayerRanking';
-import Sidebar from './Sidebar.js';
+import Sidebar from './Sidebar';
 import Stats from './Stats';
 import Teams from './Teams';
 import TeamCompare from './TeamCompare';
 import Transactions from './Transactions';
 
-import { fetchMetadata, isLoading } from './metadataSlice.js';
+import { fetchMetadata, isLoading } from './metadataSlice';
 
 function Main() {
 

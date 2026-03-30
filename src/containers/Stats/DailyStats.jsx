@@ -19,14 +19,14 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import CircleIcon from '@mui/icons-material/Circle';
 
-import { to_fantasy_date } from '../../utils/timezone.js';
-import FetchingText from '../../components/FetchingText.js';
-import PageTitle from '../../components/PageTitle.js';
-import PageSubtitle from '../../components/PageSubtitle.js';
-import ShareModal from '../../components/ShareModal.js';
-import { selectLeague, selectGameWeeks, selectTeams, selectStatCate } from '../metadataSlice.js';
-import { fetchMatchupsByWeek, fetchStatsByDate, selectMatchups, selectDailyStats, dailyIsLoading as isLoading } from './statsSlice.js';
-import { statsPreprocessing, statsH2H, statsRankAvg, statsH2HSum } from './statsHelper.js';
+import { to_fantasy_date } from '../../utils/timezone';
+import FetchingText from '../../components/FetchingText';
+import PageTitle from '../../components/PageTitle';
+import PageSubtitle from '../../components/PageSubtitle';
+import ShareModal from '../../components/ShareModal';
+import { selectLeague, selectGameWeeks, selectTeams, selectStatCate } from '../metadataSlice';
+import { fetchMatchupsByWeek, fetchStatsByDate, selectMatchups, selectDailyStats, dailyIsLoading as isLoading } from './statsSlice';
+import { statsPreprocessing, statsH2H, statsRankAvg, statsH2HSum } from './statsHelper';
 
 function DailyStats() {
   const theme = useTheme();

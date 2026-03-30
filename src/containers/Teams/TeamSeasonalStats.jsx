@@ -17,11 +17,11 @@ import Select from '@mui/material/Select';
 import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
 
-import FetchingText from '../../components/FetchingText.js';
-import PageTitle from '../../components/PageTitle.js';
-import ShareModal from '../../components/ShareModal.js';
-import { selectLeague, selectTeams, selectStatCate, selectGameWeeks } from '../metadataSlice.js';
-import { setTeam, fetchSeasonalStats, selectWeeklyStats, seasonalStatsIsLoading as isLoading } from './teamsSlice.js';
+import FetchingText from '../../components/FetchingText';
+import PageTitle from '../../components/PageTitle';
+import ShareModal from '../../components/ShareModal';
+import { selectLeague, selectTeams, selectStatCate, selectGameWeeks } from '../metadataSlice';
+import { setTeam, fetchSeasonalStats, selectWeeklyStats, seasonalStatsIsLoading as isLoading } from './teamsSlice';
 
 
 function TeamSeasonalStats(props) {

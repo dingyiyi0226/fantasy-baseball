@@ -1,10 +1,10 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import metadataReducer from './containers/metadataSlice.js';
-import statsReducer from './containers/Stats/statsSlice.js';
-import teamCompareReducer from './containers/TeamCompare/teamCompareSlice.js';
-import transactionsReducer from './containers/Transactions/transactionsSlice.js';
-import playerRankingReducer from './containers/PlayerRanking/playerRankingSlice.js';
-import teamsReducer from './containers/Teams/teamsSlice.js';
+import metadataReducer from './containers/metadataSlice';
+import statsReducer from './containers/Stats/statsSlice';
+import teamCompareReducer from './containers/TeamCompare/teamCompareSlice';
+import transactionsReducer from './containers/Transactions/transactionsSlice';
+import playerRankingReducer from './containers/PlayerRanking/playerRankingSlice';
+import teamsReducer from './containers/Teams/teamsSlice';
 
 const combinedReducer = combineReducers({
   metadata: metadataReducer,

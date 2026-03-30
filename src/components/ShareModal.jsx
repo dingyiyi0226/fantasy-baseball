@@ -6,7 +6,7 @@ import Modal from '@mui/material/Modal';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 
-import { download_img } from '../utils/share.js';
+import { download_img } from '../utils/share';
 
 function ShareModal(props) {
   const { title, canvasURL, open, onClose } = props;

@@ -9,7 +9,7 @@ import Stack from '@mui/material/Stack';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import Typography from '@mui/material/Typography';
 
-import { selectLeague, selectStandings } from './metadataSlice.js';
+import { selectLeague, selectStandings } from './metadataSlice';
 
 
 function LeagueHome(props) {

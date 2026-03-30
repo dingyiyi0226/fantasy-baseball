@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Transactions from './Transactions.js';
+import Transactions from './Transactions';
 
 function TransactionsWrapper(props) {
   return (

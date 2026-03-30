@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import { apis } from '../../utils/apis.js';
+import { apis } from '../../utils/apis';
 
 const genBatch = (playerNum) => {
   const full = Math.floor(playerNum/25);

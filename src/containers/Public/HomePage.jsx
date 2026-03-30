@@ -21,7 +21,7 @@ import weeklyMatchupImg from './weekly_matchup.png';
 import weeklyStatImg from './weekly_stat.png';
 import yahooLogin from './yahoo_login.png';
 
-const oauth_link = `https://api.login.yahoo.com/oauth2/request_auth?client_id=${process.env.REACT_APP_CLIENT_ID}&redirect_uri=${process.env.REACT_APP_REDIRECT_URI}&response_type=code`;
+const oauth_link = `https://api.login.yahoo.com/oauth2/request_auth?client_id=${import.meta.env.VITE_CLIENT_ID}&redirect_uri=${import.meta.env.VITE_REDIRECT_URI}&response_type=code`;
 
 function HomePage(props) {
 

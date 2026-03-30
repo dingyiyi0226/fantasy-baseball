@@ -1,10 +1,10 @@
 import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 
-import DailyStats from './DailyStats.js';
-import SeasonalStats from './SeasonalStats.js';
-import WinLoss from './WinLoss.js';
-import WeeklyStats from './WeeklyStats.js';
+import DailyStats from './DailyStats';
+import SeasonalStats from './SeasonalStats';
+import WinLoss from './WinLoss';
+import WeeklyStats from './WeeklyStats';
 
 function LeagueStats(props) {
   return (

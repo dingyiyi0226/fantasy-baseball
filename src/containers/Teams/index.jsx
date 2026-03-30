@@ -1,9 +1,9 @@
 import React from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 
-import TeamSeasonalStats from './TeamSeasonalStats.js';
-import TeamWeeklyStats from './TeamWeeklyStats.js';
-import TeamMatchups from './TeamMatchups.js';
+import TeamSeasonalStats from './TeamSeasonalStats';
+import TeamWeeklyStats from './TeamWeeklyStats';
+import TeamMatchups from './TeamMatchups';
 
 function Teams(props) {
   return (

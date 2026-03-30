@@ -3,11 +3,11 @@ import { Routes, Route, Navigate } from'react-router-dom';
 
 import Box from '@mui/material/Box';
 
-import HomePage from './HomePage.js';
-import Login from './Login.js';
-import LoginRedirect from './LoginRedirect.js';
-import PublicHeader from './PublicHeader.js';
-import Footer from '../../components/Footer.js';
+import HomePage from './HomePage';
+import Login from './Login';
+import LoginRedirect from './LoginRedirect';
+import PublicHeader from './PublicHeader';
+import Footer from '../../components/Footer';
 
 function Public(props) {
   return (

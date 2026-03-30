@@ -16,11 +16,11 @@ import Stack from '@mui/material/Stack';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import Typography from '@mui/material/Typography';
 
-import FetchingText from '../../components/FetchingText.js';
-import PageTitle from '../../components/PageTitle.js';
-import ShareModal from '../../components/ShareModal.js';
-import { selectTeams, selectStatCate } from '../metadataSlice.js';
-import { fetchPlayerRanking, selectPlayerRanking, isLoading } from './playerRankingSlice.js';
+import FetchingText from '../../components/FetchingText';
+import PageTitle from '../../components/PageTitle';
+import ShareModal from '../../components/ShareModal';
+import { selectTeams, selectStatCate } from '../metadataSlice';
+import { fetchPlayerRanking, selectPlayerRanking, isLoading } from './playerRankingSlice';
 
 function PlayerRanking(props) {
   const theme = useTheme();

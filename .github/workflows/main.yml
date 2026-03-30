@@ -44,22 +44,20 @@ jobs:
       - name: Create env file
         run: |
           touch .env
-          echo REACT_APP_BACKEND_URL=${{ secrets.REACT_APP_BACKEND_URL }} >> .env
-          echo REACT_APP_REDIRECT_URI=${{ secrets.REACT_APP_REDIRECT_URI }} >> .env
-          echo REACT_APP_CLIENT_ID=${{ secrets.REACT_APP_CLIENT_ID }} >> .env
+          echo VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }} >> .env
+          echo VITE_REDIRECT_URI=${{ secrets.VITE_REDIRECT_URI }} >> .env
+          echo VITE_CLIENT_ID=${{ secrets.VITE_CLIENT_ID }} >> .env
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
       - name: Build
         run: yarn build
-        env:
-          CI: ""
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build
+          path: dist
 
   deploy:
     environment:

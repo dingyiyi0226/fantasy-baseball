@@ -13,7 +13,7 @@ import Toolbar from '@mui/material/Toolbar';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 
-import { selectTeam } from './Teams/teamsSlice.js';
+import { selectTeam } from './Teams/teamsSlice';
 
 function Sidebar(props) {
   const team = useSelector(state => selectTeam(state));
