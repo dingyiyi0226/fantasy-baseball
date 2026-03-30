@@ -28,6 +28,10 @@ export const fetchStatsBySeason = createAsyncThunk('stats/fetchStatsBySeason', a
 export const fetchMatchupsUntilWeek = createAsyncThunk('stats/fetchMatchupsUntilWeek', async (payload) => {
   // payload: {teamIDs:, week:}
   const allMatchups = {};
+  if (payload.week <= 0) {
+    payload.teamIDs.forEach(team => { allMatchups[team] = []; });
+    return allMatchups;
+  }
   await Promise.all(payload.teamIDs.map(async team => {
     const matchup = await apis.getTeamMatchupsUntilWeek(team, payload.week);
     allMatchups[team] = matchup;

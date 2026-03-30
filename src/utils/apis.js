@@ -160,7 +160,8 @@ const apis = {
     }
     try {
       const results = await makeAPIrequest(query);
-      return results.team.matchups.matchup;
+      const matchup = results.team.matchups.matchup;
+      return Array.isArray(matchup) ? matchup : [matchup];
     } catch (err) {
       console.error(`Error in getMatchupsUntilWeek(): ${err}`);
       return err;
